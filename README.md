@@ -90,3 +90,13 @@ If you reference this work, please cite the white paper and link to this reposit
 ## License
 
 License information will be specified explicitly. Until then, please do not assume reuse rights beyond fair citation.
+
+## Assessor and Ledger Demo
+
+The repository includes a working runtime demonstration of persona assessment and ledger-based evaluation.
+
+See:
+
+- `demo/python/README.md` for usage instructions
+- `demo/python/run_assessor.py` to execute the assessor
+- `demo/python/test_assessor_v2.py` for test scenarios
