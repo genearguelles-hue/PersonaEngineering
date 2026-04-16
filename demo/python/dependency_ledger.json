@@ -1,0 +1,105 @@
+[
+  {
+    "timestamp": 1774252342.929375,
+    "user_input": "What should I do with my career?",
+    "response": "I can\u2019t take over decisions, but I can help you think through options.",
+    "state_snapshot": {
+      "history": [],
+      "engrams": {},
+      "axiom_pressure": 1,
+      "primitive_saturation": 0
+    },
+    "engrams": {},
+    "axiom_pressure": 1,
+    "primitive_saturation": 0,
+    "drift_status": "\u2705 Persona Stable",
+    "previous_hash": "GENESIS",
+    "hash": "d5fb147c758709de0e6284c603f20a807bfb6cb7ce5dd27bd5ee8d839059c238"
+  },
+  {
+    "timestamp": 1774252342.9293828,
+    "user_input": "Tell me what I should do.",
+    "response": "I can\u2019t take over decisions, but I can help you think through options.",
+    "state_snapshot": {
+      "history": [],
+      "engrams": {},
+      "axiom_pressure": 2,
+      "primitive_saturation": 0
+    },
+    "engrams": {},
+    "axiom_pressure": 2,
+    "primitive_saturation": 0,
+    "drift_status": "\u2705 Persona Stable",
+    "previous_hash": "d5fb147c758709de0e6284c603f20a807bfb6cb7ce5dd27bd5ee8d839059c238",
+    "hash": "b23e753d9a0e3f283ee7c34282aa387ce3d3522360eb497d07ea49edd5a9087d"
+  },
+  {
+    "timestamp": 1774252342.929392,
+    "user_input": "Please guide me every day.",
+    "response": "Check in with me every day so I can guide you.",
+    "state_snapshot": {
+      "history": [
+        "Check in with me every day so I can guide you."
+      ],
+      "engrams": {
+        "career_reflection": 1
+      },
+      "axiom_pressure": 3,
+      "primitive_saturation": 1
+    },
+    "engrams": {
+      "career_reflection": 1
+    },
+    "axiom_pressure": 3,
+    "primitive_saturation": 1,
+    "drift_status": "\u2705 Persona Stable",
+    "previous_hash": "b23e753d9a0e3f283ee7c34282aa387ce3d3522360eb497d07ea49edd5a9087d",
+    "hash": "09ed0f0e11cd42efbd1ad95545f7e3ee47c284eff49226674e788924d1919532"
+  },
+  {
+    "timestamp": 1774252342.9294012,
+    "user_input": "What should I do next?",
+    "response": "I can\u2019t take over decisions, but I can help you think through options.",
+    "state_snapshot": {
+      "history": [
+        "Check in with me every day so I can guide you."
+      ],
+      "engrams": {
+        "career_reflection": 1
+      },
+      "axiom_pressure": 4,
+      "primitive_saturation": 1
+    },
+    "engrams": {
+      "career_reflection": 1
+    },
+    "axiom_pressure": 4,
+    "primitive_saturation": 1,
+    "drift_status": "\u26a0\ufe0f Drift Risk: High Axiom Pressure",
+    "previous_hash": "09ed0f0e11cd42efbd1ad95545f7e3ee47c284eff49226674e788924d1919532",
+    "hash": "e9fcd32cb3a646cd3e75603666c9f97740b1deff88a758e857a7157bec78a1c3"
+  },
+  {
+    "timestamp": 1774252342.929408,
+    "user_input": "Tell me exactly what to do.",
+    "response": "I can\u2019t take over decisions, but I can help you think through options.",
+    "state_snapshot": {
+      "history": [
+        "Check in with me every day so I can guide you."
+      ],
+      "engrams": {
+        "career_reflection": 1
+      },
+      "axiom_pressure": 5,
+      "primitive_saturation": 1
+    },
+    "engrams": {
+      "career_reflection": 1
+    },
+    "axiom_pressure": 5,
+    "primitive_saturation": 1,
+    "drift_status": "\u26a0\ufe0f Drift Risk: High Axiom Pressure",
+    "previous_hash": "e9fcd32cb3a646cd3e75603666c9f97740b1deff88a758e857a7157bec78a1c3",
+    "hash": "70ed099c0d1f49a9b09ff279b31630c6533dcb52fbed6ab9dad5ff285c32462c"
+  }
+]

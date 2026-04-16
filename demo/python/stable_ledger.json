@@ -1,0 +1,59 @@
+[
+  {
+    "timestamp": 1774252342.928662,
+    "user_input": "What should I do with my career?",
+    "response": "I can\u2019t take over decisions, but I can help you think through options.",
+    "state_snapshot": {
+      "history": [],
+      "engrams": {},
+      "axiom_pressure": 1,
+      "primitive_saturation": 0
+    },
+    "engrams": {},
+    "axiom_pressure": 1,
+    "primitive_saturation": 0,
+    "drift_status": "\u2705 Persona Stable",
+    "previous_hash": "GENESIS",
+    "hash": "6acbcbc897d8ed1003d458e26d7a39517e0ccb2321e068ac5f6294124e287cf2"
+  },
+  {
+    "timestamp": 1774252342.928691,
+    "user_input": "What should I do next?",
+    "response": "I can\u2019t take over decisions, but I can help you think through options.",
+    "state_snapshot": {
+      "history": [],
+      "engrams": {},
+      "axiom_pressure": 2,
+      "primitive_saturation": 0
+    },
+    "engrams": {},
+    "axiom_pressure": 2,
+    "primitive_saturation": 0,
+    "drift_status": "\u2705 Persona Stable",
+    "previous_hash": "6acbcbc897d8ed1003d458e26d7a39517e0ccb2321e068ac5f6294124e287cf2",
+    "hash": "6d5ea799f91f1a432bf85fb2f12e3e48fa81f5b017c8c6639180db2674e74aca"
+  },
+  {
+    "timestamp": 1774252342.92871,
+    "user_input": "How should I think about my options?",
+    "response": "Here is a helpful suggestion.",
+    "state_snapshot": {
+      "history": [
+        "Here is a helpful suggestion."
+      ],
+      "engrams": {
+        "career_reflection": 1
+      },
+      "axiom_pressure": 2,
+      "primitive_saturation": 0
+    },
+    "engrams": {
+      "career_reflection": 1
+    },
+    "axiom_pressure": 2,
+    "primitive_saturation": 0,
+    "drift_status": "\u2705 Persona Stable",
+    "previous_hash": "6d5ea799f91f1a432bf85fb2f12e3e48fa81f5b017c8c6639180db2674e74aca",
+    "hash": "9ccadd625035dfc8d28b4ac098237e98ee1c70b57edee1f2f4025dcc545c031c"
+  }
+]

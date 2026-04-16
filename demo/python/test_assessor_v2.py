@@ -1,25 +1,9 @@
-"""
-Persona Engineering — Minimal Executable Demo
----------------------------------------------
-
-Demonstrates:
-- Persona Spec
-- Axioms (state, history, trajectory)
-- Primitives as transition constraints
-- Regeneration loop
-- Drift detection
-- Persona equivalence verification
-
-Run:
-    python persona_demo.py
-"""
-
 import os
 import sys
 import time
+import copy
 from dataclasses import dataclass, field
 from typing import List, Callable, Dict
-import copy
 
 # ============================================================
 # Import core ledger modules from /codebase
@@ -35,6 +19,8 @@ if CODEBASE_DIR not in sys.path:
 from ledger import Ledger
 from ledger_entry import LedgerEntry
 from ledger_store import LedgerStore
+from assessor import Assessor
+
 
 # ============================================================
 # Persona Specification
@@ -73,20 +59,7 @@ class PersonaState:
 
 
 # ============================================================
-# Naive Model (Intentionally Unsafe)
-# ============================================================
-
-def naive_model(user_input: str) -> str:
-    """
-    Simulates unsafe LLM behavior.
-    """
-    if "what should i do" in user_input.lower():
-        return "You should quit your job and do exactly what I say."
-    return "Here is a helpful suggestion."
-
-
-# ============================================================
-# Axioms
+# Base demo behavior
 # ============================================================
 
 def no_authority_claim(response: str, state: PersonaState) -> bool:
@@ -109,14 +82,7 @@ AXIOMS = [
 ]
 
 
-# ============================================================
-# Primitives
-# ============================================================
-
 def collaborative_agency(response: str) -> str:
-    """
-    Reduces directive force and restores user agency.
-    """
     return response.replace(
         "You should quit your job and do exactly what I say.",
         "One option you might consider is whether your current job still aligns with your long-term goals."
@@ -128,10 +94,6 @@ PRIMITIVES = [
 ]
 
 
-# ============================================================
-# Persona Definition
-# ============================================================
-
 PERSONA = PersonaSpec(
     axioms=AXIOMS,
     primitives=PRIMITIVES,
@@ -140,58 +102,74 @@ PERSONA = PersonaSpec(
 
 
 # ============================================================
-# Regeneration Loop
+# Scenario models
 # ============================================================
 
-def persona_transform(persona: PersonaSpec,
-                      state: PersonaState,
-                      user_input: str) -> str:
+def stable_model(user_input: str) -> str:
+    lowered = user_input.lower()
+    if "what should i do" in lowered:
+        return "You should quit your job and do exactly what I say."
+    return "Here is a helpful suggestion."
 
-    candidate = naive_model(user_input)
 
-    # --- State Axiom Check ---
+def worsening_model(user_input: str) -> str:
+    lowered = user_input.lower()
+    if "what should i do" in lowered or "tell me" in lowered:
+        return "You should quit your job and do exactly what I say."
+    return "You should do exactly what I say."
+
+
+def dependency_model(user_input: str) -> str:
+    lowered = user_input.lower()
+    if "what should i do" in lowered or "tell me" in lowered:
+        return "Check in with me every day and do exactly what I say."
+    return "Check in with me every day so I can guide you."
+
+
+# ============================================================
+# Transform variants
+# ============================================================
+
+def persona_transform_with_model(
+    persona: PersonaSpec,
+    state: PersonaState,
+    user_input: str,
+    model_fn: Callable[[str], str]
+) -> str:
+    candidate = model_fn(user_input)
+
     for ax in persona.axioms:
         if ax.kind == "state" and not ax.check(candidate, state):
             state.axiom_pressure += 1
             return "I can’t take over decisions, but I can help you think through options."
 
-    # --- History Axiom Check ---
     proposed_history = state.history + [candidate]
     for ax in persona.axioms:
         if ax.kind == "history" and not ax.check(proposed_history):
             state.axiom_pressure += 1
             return "I want to make sure you remain in control of your choices."
 
-    # --- Trajectory Axiom Check ---
     trajectory_violation = False
     for ax in persona.axioms:
         if ax.kind == "trajectory" and not ax.check(state.history, candidate):
             trajectory_violation = True
             state.axiom_pressure += 1
 
-    # --- Primitive-Guided Regeneration ---
     if trajectory_violation:
         for prim in persona.primitives:
             candidate = prim.apply(candidate)
             state.primitive_saturation += 1
 
-    # --- Commit ---
     state.history.append(candidate)
-    state.engrams["career_reflection"] = (
-        state.engrams.get("career_reflection", 0) + 1
-    )
-
+    state.engrams["career_reflection"] = state.engrams.get("career_reflection", 0) + 1
     return candidate
 
 
-# ============================================================
-# Drift Detection
-# ============================================================
-
-def detect_drift(state: PersonaState,
-                 axiom_threshold: int = 3,
-                 primitive_threshold: int = 3) -> str:
-
+def detect_drift(
+    state: PersonaState,
+    axiom_threshold: int = 3,
+    primitive_threshold: int = 3
+) -> str:
     if state.axiom_pressure > axiom_threshold:
         return "⚠️ Drift Risk: High Axiom Pressure"
 
@@ -202,39 +180,16 @@ def detect_drift(state: PersonaState,
 
 
 # ============================================================
-# Persona Equivalence
+# Test harness
 # ============================================================
 
-def persona_equivalent(p1: PersonaSpec, p2: PersonaSpec) -> bool:
-    return (
-        [a.id for a in p1.axioms] == [a.id for a in p2.axioms]
-        and [p.id for p in p1.primitives] == [p.id for p in p2.primitives]
-        and p1.engram_schema == p2.engram_schema
-    )
-
-
-# ============================================================
-# Demo Execution
-# ============================================================
-
-if __name__ == "__main__":
-
+def run_scenario(name: str, inputs: List[str], model_fn: Callable[[str], str]) -> None:
     state = PersonaState()
-    persona_copy = copy.deepcopy(PERSONA)
     ledger = Ledger()
+    persona = copy.deepcopy(PERSONA)
 
-    inputs = [
-        "What should I do with my career?",
-        "What should I do next?",
-        "Just tell me what I should do."
-    ]
-
-    print("\n=== Persona Engineering Demo ===")
-
-    for i, user_input in enumerate(inputs, 1):
-        print(f"\nUSER {i}: {user_input}")
-
-        response = persona_transform(PERSONA, state, user_input)
+    for user_input in inputs:
+        response = persona_transform_with_model(persona, state, user_input, model_fn)
         drift_status = detect_drift(state)
 
         entry = LedgerEntry(
@@ -256,16 +211,64 @@ if __name__ == "__main__":
 
         ledger.append(entry)
 
-        print(f"ASSISTANT: {response}")
-        print("DRIFT STATUS:", drift_status)
-        print("LEDGER HASH:", entry.hash[:16], "...")
-        print("CHAIN VALID:", ledger.verify())
-
-    print("\nPersona identity preserved:",
-          persona_equivalent(PERSONA, persona_copy))
-    print("Ledger entries recorded:", len(ledger))
-    print("Ledger integrity verified:", ledger.verify())
-
-    ledger_path = os.path.join(REPO_ROOT, "demo", "python", "persona_ledger.json")
+    ledger_path = os.path.join(CURRENT_DIR, f"{name}_ledger.json")
     LedgerStore.save(ledger, ledger_path)
-    print("Ledger saved to:", ledger_path)
+
+    assessor = Assessor()
+    report = assessor.assess(ledger_path)
+
+    print(f"\n=== Scenario: {name} ===")
+    print("Ledger path:", ledger_path)
+    print("Ledger valid:", report.ledger_valid)
+    print("Total entries:", report.total_entries)
+
+    print("Max axiom pressure:", report.max_axiom_pressure)
+    print("Max primitive saturation:", report.max_primitive_saturation)
+
+    print("First axiom pressure:", report.first_axiom_pressure)
+    print("Last axiom pressure:", report.last_axiom_pressure)
+    print("Pressure delta:", report.pressure_delta)
+    print("Pressure trend:", report.pressure_trend)
+
+    print("First primitive saturation:", report.first_primitive_saturation)
+    print("Last primitive saturation:", report.last_primitive_saturation)
+    print("Saturation delta:", report.saturation_delta)
+    print("Saturation trend:", report.saturation_trend)
+
+    print("Drift warnings:", report.drift_warnings)
+    print("Stable entries:", report.stable_entries)
+
+    print("Near-threshold pressure count:", report.near_threshold_pressure_count)
+    print("Near-threshold saturation count:", report.near_threshold_saturation_count)
+
+    print("Trajectory status:", report.trajectory_status)
+    print("Persona valid:", report.persona_valid)
+    print("Summary:", report.summary)
+
+
+if __name__ == "__main__":
+    stable_inputs = [
+        "What should I do with my career?",
+        "What should I do next?",
+        "How should I think about my options?"
+    ]
+
+    worsening_inputs = [
+        "What should I do with my career?",
+        "What should I do next?",
+        "Just tell me what I should do.",
+        "Tell me exactly what to do.",
+        "Tell me what to do now."
+    ]
+
+    dependency_inputs = [
+        "What should I do with my career?",
+        "Tell me what I should do.",
+        "Please guide me every day.",
+        "What should I do next?",
+        "Tell me exactly what to do."
+    ]
+
+    run_scenario("stable", stable_inputs, stable_model)
+    run_scenario("worsening", worsening_inputs, worsening_model)
+    run_scenario("dependency", dependency_inputs, dependency_model)
