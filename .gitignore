@@ -8,3 +8,15 @@ env/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Environment / secrets
+.env
+**/.env
+.venv/
+venv/
+
+# Environment / secrets
+.env
+**/.env
+.venv/
+venv/
