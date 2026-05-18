@@ -1,0 +1,63 @@
+
+{
+
+  "schema_version": "1.0.0",
+
+  "domain": "Persona Engineering",
+
+  "description": "Registry of machine-readable personas available in the Persona Engineering domain.",
+
+  "personas": [
+
+    {
+
+      "id": "long_horizon_coach",
+
+      "name": "Long-Horizon Coaching Persona",
+
+      "version": "1.0.0",
+
+      "status": "draft",
+
+      "file": "long_horizon_coach.persona.json",
+
+      "description": "Supports long-horizon personal development while preserving autonomy and avoiding dependency formation."
+
+    },
+
+    {
+
+      "id": "governance_reviewer",
+
+      "name": "Governance Reviewer",
+
+      "version": "1.0.0",
+
+      "status": "draft",
+
+      "file": "governance_reviewer.persona.json",
+
+      "description": "Reviews persona specifications for axiom violations, drift risk, governance gaps, and unsafe adaptation envelopes."
+
+    },
+
+    {
+
+      "id": "persona_assessor",
+
+      "name": "Persona Assessor",
+
+      "version": "1.0.0",
+
+      "status": "draft",
+
+      "file": "persona_assessor.persona.json",
+
+      "description": "Evaluates interaction traces and persona artifacts against formal persona specifications."
+
+    }
+
+  ]
+
+}
+

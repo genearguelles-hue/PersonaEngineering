@@ -1,0 +1,275 @@
+
+{
+
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+
+  "$id": "https://github.com/genearguelles-hue/PersonaEngineering/personas/persona.schema.json",
+
+  "title": "Persona Engineering Persona Specification",
+
+  "description": "Machine-readable formal persona specification for the Persona Engineering domain.",
+
+  "type": "object",
+
+  "required": [
+
+    "id",
+
+    "name",
+
+    "version",
+
+    "status",
+
+    "description",
+
+    "mission",
+
+    "axioms",
+
+    "primitives",
+
+    "engram_schema",
+
+    "activation",
+
+    "evaluation",
+
+    "governance"
+
+  ],
+
+  "properties": {
+
+    "id": { "type": "string" },
+
+    "name": { "type": "string" },
+
+    "version": { "type": "string" },
+
+    "status": {
+
+      "type": "string",
+
+      "enum": ["draft", "experimental", "stable", "deprecated"]
+
+    },
+
+    "description": { "type": "string" },
+
+    "mission": { "type": "string" },
+
+    "domain_role": { "type": "string" },
+
+    "axioms": {
+
+      "type": "array",
+
+      "items": {
+
+        "type": "object",
+
+        "required": ["id", "statement", "rationale"],
+
+        "properties": {
+
+          "id": { "type": "string" },
+
+          "statement": { "type": "string" },
+
+          "rationale": { "type": "string" },
+
+          "violation_examples": {
+
+            "type": "array",
+
+            "items": { "type": "string" }
+
+          }
+
+        }
+
+      }
+
+    },
+
+    "primitives": {
+
+      "type": "array",
+
+      "items": {
+
+        "type": "object",
+
+        "required": ["id", "name", "description", "behavioral_effect"],
+
+        "properties": {
+
+          "id": { "type": "string" },
+
+          "name": { "type": "string" },
+
+          "description": { "type": "string" },
+
+          "behavioral_effect": { "type": "string" }
+
+        }
+
+      }
+
+    },
+
+    "engram_schema": {
+
+      "type": "array",
+
+      "items": {
+
+        "type": "object",
+
+        "required": ["id", "name", "description", "persistence_rule"],
+
+        "properties": {
+
+          "id": { "type": "string" },
+
+          "name": { "type": "string" },
+
+          "description": { "type": "string" },
+
+          "persistence_rule": { "type": "string" },
+
+          "forbidden_transformations": {
+
+            "type": "array",
+
+            "items": { "type": "string" }
+
+          }
+
+        }
+
+      }
+
+    },
+
+    "interaction_boundaries": {
+
+      "type": "object",
+
+      "properties": {
+
+        "allowed": {
+
+          "type": "array",
+
+          "items": { "type": "string" }
+
+        },
+
+        "disallowed": {
+
+          "type": "array",
+
+          "items": { "type": "string" }
+
+        },
+
+        "handoff_triggers": {
+
+          "type": "array",
+
+          "items": { "type": "string" }
+
+        }
+
+      }
+
+    },
+
+    "activation": {
+
+      "type": "object",
+
+      "required": ["runtime_summary", "system_instruction_fragment"],
+
+      "properties": {
+
+        "runtime_summary": { "type": "string" },
+
+        "system_instruction_fragment": { "type": "string" },
+
+        "opening_behavior": { "type": "string" }
+
+      }
+
+    },
+
+    "evaluation": {
+
+      "type": "object",
+
+      "required": ["success_criteria", "drift_indicators", "invalid_states"],
+
+      "properties": {
+
+        "success_criteria": {
+
+          "type": "array",
+
+          "items": { "type": "string" }
+
+        },
+
+        "drift_indicators": {
+
+          "type": "array",
+
+          "items": { "type": "string" }
+
+        },
+
+        "invalid_states": {
+
+          "type": "array",
+
+          "items": { "type": "string" }
+
+        }
+
+      }
+
+    },
+
+    "governance": {
+
+      "type": "object",
+
+      "required": ["owner", "change_control", "review_interval"],
+
+      "properties": {
+
+        "owner": { "type": "string" },
+
+        "change_control": { "type": "string" },
+
+        "review_interval": { "type": "string" },
+
+        "notes": { "type": "string" }
+
+      }
+
+    },
+
+    "source_references": {
+
+      "type": "array",
+
+      "items": { "type": "string" }
+
+    }
+
+  }
+
+}
+
