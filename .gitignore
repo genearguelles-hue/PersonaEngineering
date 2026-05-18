@@ -20,3 +20,7 @@ venv/
 **/.env
 .venv/
 venv/
+
+# Local development folders
+persona_backend/
+persona_import_agent/
