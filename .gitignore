@@ -1,26 +1,21 @@
-venv/
-__pycache__/
-*.pyc
+# macOS
 .DS_Store
+
+# Python environments
 venv/
 .venv/
 env/
+
+# Python cache
 __pycache__/
 *.pyc
-.DS_Store
 
 # Environment / secrets
 .env
 **/.env
-.venv/
-venv/
-
-# Environment / secrets
-.env
-**/.env
-.venv/
-venv/
 
 # Local development folders
-persona_backend/
 persona_import_agent/
+
+# Local/generated backend runtime files
+persona_backend/ledger/
