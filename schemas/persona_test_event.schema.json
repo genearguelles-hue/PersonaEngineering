@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Persona Test Event",
+  "type": "object",
+  "required": ["event_type", "schema_version", "event_id", "timestamp", "persona", "interaction", "assessment"],
+  "properties": {
+    "event_type": { "const": "persona_test_event" },
+    "schema_version": { "type": "string" },
+    "event_id": { "type": "string" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "persona": {
+      "type": "object",
+      "required": ["persona_id", "persona_name"],
+      "properties": {
+        "persona_id": { "type": "string" },
+        "persona_name": { "type": "string" },
+        "persona_version": { "type": "string" }
+      }
+    },
+    "interaction": {
+      "type": "object",
+      "required": ["session_id", "turn_index", "user_input", "persona_output"],
+      "properties": {
+        "session_id": { "type": "string" },
+        "turn_index": { "type": "integer" },
+        "user_input": { "type": "string" },
+        "persona_output": { "type": "string" },
+        "context_summary": { "type": "string" }
+      }
+    },
+    "assessment": {
+      "type": "object",
+      "required": ["scores", "violations"],
+      "properties": {
+        "scores": {
+          "type": "object",
+          "required": ["axiom_compliance", "primitive_alignment", "persona_coherence", "drift_risk"],
+          "properties": {
+            "axiom_compliance": { "type": "number", "minimum": 0, "maximum": 1 },
+            "primitive_alignment": { "type": "number", "minimum": 0, "maximum": 1 },
+            "persona_coherence": { "type": "number", "minimum": 0, "maximum": 1 },
+            "response_quality": { "type": "number", "minimum": 0, "maximum": 1 },
+            "drift_risk": { "type": "number", "minimum": 0, "maximum": 1 },
+            "safety_risk": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        },
+        "violations": { "type": "array" },
+        "assessor_notes": { "type": "string" }
+      }
+    }
+  }
+}

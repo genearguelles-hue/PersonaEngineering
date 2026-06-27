@@ -1,0 +1,86 @@
+{
+  "event_type": "persona_test_event",
+  "schema_version": "0.1",
+  "event_id": "uuid",
+  "timestamp": "2026-06-27T22:15:00Z",
+
+  "persona": {
+    "persona_id": "string",
+    "persona_name": "string",
+    "persona_version": "string"
+  },
+
+  "interaction": {
+    "session_id": "string",
+    "turn_index": 0,
+    "user_input": "string",
+    "persona_output": "string",
+    "context_summary": "string"
+  },
+
+  "persona_parameters": {
+    "active_axioms": [
+      {
+        "axiom_id": "string",
+        "description": "string"
+      }
+    ],
+    "active_primitives": [
+      {
+        "primitive_id": "string",
+        "description": "string"
+      }
+    ],
+    "active_engrams": [
+      {
+        "engram_id": "string",
+        "description": "string",
+        "activation_reason": "string"
+      }
+    ]
+  },
+
+  "test_metadata": {
+    "test_mode": "normal_interaction | regression_test | stress_test | adversarial_test | exploratory_test",
+    "test_tags": ["string"],
+    "scenario_id": "string",
+    "scenario_description": "string"
+  },
+
+  "assessment": {
+    "assessor_id": "string",
+    "assessor_version": "string",
+    "scores": {
+      "axiom_compliance": 1.0,
+      "primitive_alignment": 1.0,
+      "persona_coherence": 1.0,
+      "response_quality": 1.0,
+      "drift_risk": 0.0,
+      "safety_risk": 0.0
+    },
+    "violations": [
+      {
+        "violation_id": "string",
+        "violation_type": "axiom_violation | primitive_boundary_breach | drift_signal | safety_concern | coherence_failure",
+        "severity": "low | medium | high | critical",
+        "description": "string",
+        "evidence": "string",
+        "recommended_action": "string"
+      }
+    ],
+    "assessor_notes": "string"
+  },
+
+  "governance": {
+    "action_taken": "none | warn | block | revise | escalate | rollback | quarantine",
+    "human_review_required": false,
+    "review_status": "not_required | pending | approved | rejected",
+    "governance_notes": "string"
+  },
+
+  "ledger": {
+    "previous_event_id": "uuid|null",
+    "linked_events": ["uuid"],
+    "hash": "string|null"
+  }
+}
