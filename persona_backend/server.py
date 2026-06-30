@@ -30,6 +30,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from openai import OpenAI
 from pydantic import BaseModel, Field
+from persona_test_harness.harness_service import record_persona_interaction
 
 
 load_dotenv()
@@ -103,6 +104,20 @@ class GeneratePostResponse(BaseModel):
     personaName: str
     output: str
     validationNotes: list[str]
+
+class InvokePersonaRequest(BaseModel):
+    user_request: str
+    mission_context: Optional[str] = ""
+    postStyle: Optional[str] = "clear, concise, helpful"
+    platform: Optional[str] = "general"
+    maxWords: Optional[int] = 500
+
+class InvokePersonaResponse(BaseModel):
+    persona_id: str
+    persona_name: str
+    output: str
+    ledger_recorded: bool
+    harness_error: Optional[str] = None    
 
 def normalize_persona_data(raw_data: dict, persona_id: str) -> dict:
     # PersonaFoundry exports wrap the actual persona inside "persona".
@@ -293,6 +308,7 @@ def health() -> dict[str, Any]:
 def list_personas():
     personas_dir = Path("personas")
     personas = []
+
     if not personas_dir.exists():
         return {
             "count": 0,
@@ -303,29 +319,29 @@ def list_personas():
         try:
             with persona_file.open("r", encoding="utf-8") as f:
                 data = json.load(f)
-            persona_id = (
-                data.get("persona_id")
-                or data.get("id")
-                or persona_file.parent.name
-            )
-            name = (
-                data.get("name")
-                or data.get("display_name")
-                or persona_file.parent.name
-            )
+
+            persona_data = normalize_persona_data(data, persona_file.parent.name)
+
+            persona_id = persona_file.parent.name
+            name = persona_data.get("name") or persona_file.parent.name
+            status = data.get("status", "active")
+
             personas.append({
                 "persona_id": persona_id,
                 "name": name,
                 "path": str(persona_file),
-                "status": data.get("status", "active")
+                "status": status
             })
+
         except Exception as e:
             personas.append({
                 "persona_id": persona_file.parent.name,
+                "name": persona_file.parent.name,
                 "path": str(persona_file),
                 "status": "error",
                 "error": str(e)
             })
+
     return {
         "count": len(personas),
         "personas": personas
@@ -365,6 +381,60 @@ def get_persona_detail(persona_id: str):
             status_code=400,
             detail=f"Failed to retrieve persona '{persona_id}': {str(e)}"
         )
+
+@app.get("/personas/{persona_id}/runtime")
+def get_persona_runtime(persona_id: str):
+    persona = load_persona_by_id(persona_id)
+
+    return {
+        "persona_id": persona_id,
+        "name": persona.name,
+        "missionType": persona.missionType,
+        "missionDescription": persona.missionDescription,
+        "coreIdentity": persona.coreIdentity,
+        "axioms": [axiom.model_dump() for axiom in persona.axioms],
+        "primitives": [primitive.model_dump() for primitive in persona.primitives],
+        "engramSchema": persona.engramSchema.model_dump(),
+        "systemPrompt": persona.systemPrompt,
+        "runtime_status": "ready"
+    }
+
+@app.post("/personas/{persona_id}/invoke", response_model=InvokePersonaResponse)
+def invoke_persona(persona_id: str, request: InvokePersonaRequest):
+    persona = load_persona_by_id(persona_id)
+    generate_request = GeneratePostRequest(
+        persona=persona,
+        userIntent=request.user_request,
+        postStyle=request.postStyle,
+        platform=request.platform,
+        maxWords=request.maxWords
+    )
+
+    response = generate_post(generate_request)
+    harness_error = record_persona_interaction(
+        persona_id=persona_id,
+        persona_name=response.personaName,
+        persona_version="0.1",
+        session_id=f"invoke:{persona_id}",
+        turn_index=1,
+        user_input=request.user_request,
+        persona_output=response.output,
+        context_summary=(
+            f"Live persona invocation. "
+            f"Mission context={request.mission_context}; "
+            f"Platform={request.platform}; style={request.postStyle}; maxWords={request.maxWords}."
+        ),
+        scenario_id="LIVE-PERSONA-INVOKE",
+        scenario_description="Live persona invocation through Persona Backend."
+    )
+
+    return InvokePersonaResponse(
+        persona_id=persona_id,
+        persona_name=response.personaName,
+        output=response.output,
+        ledger_recorded=harness_error is None,
+        harness_error=harness_error
+    )
 
 @app.get("/ledger")
 def get_ledger(limit: int = 10):
@@ -449,9 +519,26 @@ def generate_post_from_persona(request: GeneratePostFromPersonaRequest):
         "validationNotes": response.validationNotes
     })
 
-    return response
+    harness_error = record_persona_interaction(
+        persona_id=request.persona_id,
+        persona_name=response.personaName,
+        persona_version="0.1",
+        session_id=f"generate_post_from_persona:{request.persona_id}",
+        turn_index=1,
+        user_input=request.userIntent,
+        persona_output=response.output,
+        context_summary=(
+            f"Live backend interaction via /generate-post-from-persona. "
+            f"Platform={request.platform}; style={request.postStyle}; maxWords={request.maxWords}."
+        ),
+        scenario_id="LIVE-GENERATE-POST",
+        scenario_description="Live persona-governed post generation through Persona Backend."
+    )
 
-    return generate_post(generate_request)
+    if harness_error:
+        print(f"⚠️ Persona Test Harness recording failed: {harness_error}")
+
+    return response
 
 def compile_persona_runtime_prompt(request: GeneratePostRequest) -> str:
     persona = request.persona
