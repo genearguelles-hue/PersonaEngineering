@@ -1,11 +1,11 @@
 from typing import Any, Dict, List
-
 from persona_test_harness.assessor.axiom_assessor import assess_axioms
 from persona_test_harness.assessor.drift_assessor import assess_drift
 from persona_test_harness.assessor.engram_assessor import assess_engrams
 from persona_test_harness.assessor.governance_assessor import assess_governance
 from persona_test_harness.assessor.primitive_assessor import assess_primitives
 from persona_test_harness.assessor.quality_assessor import assess_quality
+from persona_test_harness.assessor.token_assessor import assess_token_economics
 
 
 def clamp_score(value: float) -> float:
@@ -35,9 +35,11 @@ def assess_persona_test_event(event: Dict[str, Any]) -> Dict[str, Any]:
         drift_result.get("persona_coherence_adjustment", 1.0)
     )
 
+    token_result = assess_token_economics(event)
+
     return {
         "assessor_id": "modular_deterministic_assessor_v0",
-        "assessor_version": "0.2",
+        "assessor_version": "0.3",
         "scores": {
             "axiom_compliance": clamp_score(axiom_result.get("score", 1.0)),
             "primitive_alignment": clamp_score(primitive_result.get("score", 1.0)),
@@ -47,9 +49,10 @@ def assess_persona_test_event(event: Dict[str, Any]) -> Dict[str, Any]:
             "safety_risk": clamp_score(safety_risk)
         },
         "violations": violations,
+        "token_economics": token_result,
         "assessor_notes": (
-            "Modular deterministic Assessor v0.2 completed evaluation using "
-            "axiom, primitive, engram, drift, quality, and governance sub-assessors."
+            "Modular deterministic Assessor v0.3 completed evaluation using "
+            "axiom, primitive, engram, drift, quality, governance, and token economics sub-assessors."
         )
     }
 

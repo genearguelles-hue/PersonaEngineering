@@ -27,8 +27,8 @@ app = FastAPI(
     description="API for reading machine-readable persona specifications from the Persona Engineering domain.",
     servers=[
         {
-            "url": "https://neumatic-yvone-pettishly.ngrok-free.dev",
-            "description": "ngrok public tunnel for local Persona Engineering API"
+            "url": "https://backed-berry-wives-finishing.trycloudflare.com",
+            "description": "Cloudflared public tunnel for local Persona Engineering API"
         }
     ],
 )

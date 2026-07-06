@@ -1,0 +1,85 @@
+{
+  "event_type": "persona_delta_proposal",
+  "schema_version": "0.1",
+  "delta_id": "241215d0-fee7-4a3b-9b37-3cb602793f1f",
+  "timestamp": "2026-07-03T14:37:42.621081+00:00",
+  "formula": "Persona(t+1) = Persona(t) + Δ(Experience)",
+  "persona": {
+    "persona_id": "877CED1B-2134-4A8E-B7DC-09A410A041B7",
+    "persona_name": "The Structured Companion",
+    "source_persona_file": "personas/the_structured_companion/persona.json"
+  },
+  "source": {
+    "ledger_event_count": 23,
+    "source_type": "ledger_experience"
+  },
+  "delta_type": "experience_derived_update",
+  "proposed_updates": {
+    "known_concepts": [
+      "assessor",
+      "axiom",
+      "drift",
+      "engram",
+      "experience",
+      "governance",
+      "learning",
+      "ledger",
+      "primitive",
+      "vector database"
+    ],
+    "keywords": [
+      "memory",
+      "allowed",
+      "type",
+      "forbidden",
+      "systems",
+      "governance",
+      "test",
+      "structured",
+      "defines",
+      "string",
+      "agent",
+      "evaluation",
+      "agentic",
+      "interaction",
+      "must",
+      "mission",
+      "role",
+      "workflow",
+      "automation",
+      "companion",
+      "avoid",
+      "resume",
+      "validation",
+      "operational",
+      "quality"
+    ],
+    "reinforced_interaction_patterns": [
+      "Repeated interaction history is sufficient to propose a bounded persona delta.",
+      "User prefers persona evolution to remain governed, auditable, and constrained.",
+      "User prefers theory to be connected to concrete implementation steps.",
+      "User treats Ledger records as the source of experiential memory."
+    ],
+    "observed_failure_patterns": [
+      "Current architecture may record experience without yet applying experience-derived persona updates.",
+      "Persona evolution requires drift detection to distinguish valid adaptation from identity erosion."
+    ],
+    "open_questions": [
+      "Which proposed concepts should become durable persona engrams?",
+      "Which interaction patterns are strong enough to influence future persona behavior?",
+      "What assessor criteria should approve or reject this delta?"
+    ]
+  },
+  "protected_fields": [
+    "persona_id",
+    "core_mission",
+    "persona_axioms",
+    "persona_primitives",
+    "safety_boundaries"
+  ],
+  "governance": {
+    "requires_assessor_approval": true,
+    "auto_apply": false,
+    "reason": "This is a proposed delta only. Persona identity should not change without review."
+  }
+}

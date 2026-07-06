@@ -1,0 +1,543 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Persona Engineering Domain API",
+    "description": "Retrieve, inspect, generate with, and audit personas from the Persona Engineering domain.",
+    "version": "1.2.1"
+  },
+  "servers": [
+    {
+      "url": "https://expectations-ion-years-scope.trycloudflare.com"
+    }
+  ],
+  "paths": {
+    "/personas": {
+      "get": {
+        "operationId": "listPersonas",
+        "summary": "List available personas",
+        "responses": {
+          "200": {
+            "description": "Available personas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "personas": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "persona_id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "path": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "persona_id",
+                          "name",
+                          "path",
+                          "status"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "count",
+                    "personas"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/personas/{persona_id}": {
+      "get": {
+        "operationId": "getPersonaDetail",
+        "summary": "Get full persona details",
+        "parameters": [
+          {
+            "name": "persona_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Full normalized persona specification",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "persona_id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "missionType": {
+                      "type": "string"
+                    },
+                    "missionDescription": {
+                      "type": "string"
+                    },
+                    "coreIdentity": {
+                      "type": "string"
+                    },
+                    "axioms": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "isRequired": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    },
+                    "primitives": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "value": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "engramSchema": {
+                      "type": "object",
+                      "properties": {
+                        "allowedMemoryTypes": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "forbiddenMemoryTypes": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "avatarPrompt": {
+                      "type": "string"
+                    },
+                    "systemPrompt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "persona_id",
+                    "name",
+                    "missionType",
+                    "missionDescription",
+                    "coreIdentity",
+                    "axioms",
+                    "primitives",
+                    "engramSchema",
+                    "systemPrompt"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/personas/{persona_id}/runtime": {
+      "get": {
+        "operationId": "getPersonaRuntime",
+        "summary": "Get runtime bundle for a persona",
+        "parameters": [
+          {
+            "name": "persona_id",
+            "in": "path",
+            "required": true,
+            "description": "Stable slug ID of the persona to retrieve.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Runtime instruction bundle",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "persona_id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "missionType": {
+                      "type": "string"
+                    },
+                    "missionDescription": {
+                      "type": "string"
+                    },
+                    "coreIdentity": {
+                      "type": "string"
+                    },
+                    "axioms": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "isRequired": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    },
+                    "primitives": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "value": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "engramSchema": {
+                      "type": "object",
+                      "properties": {
+                        "allowedMemoryTypes": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "forbiddenMemoryTypes": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "systemPrompt": {
+                      "type": "string"
+                    },
+                    "runtime_status": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "persona_id",
+                    "name",
+                    "missionDescription",
+                    "coreIdentity",
+                    "axioms",
+                    "primitives",
+                    "engramSchema",
+                    "systemPrompt",
+                    "runtime_status"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/personas/{persona_id}/invoke": {
+  "post": {
+    "operationId": "invokePersona",
+    "summary": "Invoke a persona and record the interaction",
+    "parameters": [
+      {
+        "name": "persona_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "properties": {
+              "user_request": {
+                "type": "string"
+              },
+              "mission_context": {
+                "type": "string"
+              },
+              "postStyle": {
+                "type": "string",
+                "default": "clear, concise, helpful"
+              },
+              "platform": {
+                "type": "string",
+                "default": "general"
+              },
+              "maxWords": {
+                "type": "integer",
+                "default": 500
+              }
+            },
+            "required": [
+              "user_request"
+            ]
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Persona invocation response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "persona_id": {
+                  "type": "string"
+                },
+                "persona_name": {
+                  "type": "string"
+                },
+                "output": {
+                  "type": "string"
+                },
+                "ledger_recorded": {
+                  "type": "boolean"
+                },
+                "harness_error": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "persona_id",
+                "persona_name",
+                "output",
+                "ledger_recorded"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+},
+
+    "/generate-post-from-persona": {
+      "post": {
+        "operationId": "generatePostFromPersona",
+        "summary": "Generate content using a selected persona",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "persona_id": {
+                    "type": "string"
+                  },
+                  "userIntent": {
+                    "type": "string"
+                  },
+                  "postStyle": {
+                    "type": "string",
+                    "default": "clear, concise, reflective"
+                  },
+                  "platform": {
+                    "type": "string",
+                    "default": "general"
+                  },
+                  "maxWords": {
+                    "type": "integer",
+                    "default": 250,
+                    "minimum": 1,
+                    "maximum": 2000
+                  }
+                },
+                "required": [
+                  "persona_id",
+                  "userIntent"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Persona-governed generation response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "model": {
+                      "type": "string"
+                    },
+                    "generatedAt": {
+                      "type": "string"
+                    },
+                    "personaName": {
+                      "type": "string"
+                    },
+                    "output": {
+                      "type": "string"
+                    },
+                    "validationNotes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "model",
+                    "generatedAt",
+                    "personaName",
+                    "output",
+                    "validationNotes"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ledger": {
+      "get": {
+        "operationId": "getLedger",
+        "summary": "Get recent ledger entries",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recent ledger entries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "entries": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "event_type": {
+                            "type": "string"
+                          },
+                          "ledger_id": {
+                            "type": "string"
+                          },
+                          "timestamp": {
+                            "type": "string"
+                          },
+                          "persona_id": {
+                            "type": "string"
+                          },
+                          "persona_name": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "count",
+                    "entries"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
