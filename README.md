@@ -100,3 +100,11 @@ See:
 - `demo/python/README.md` for usage instructions
 - `demo/python/run_assessor.py` to execute the assessor
 - `demo/python/test_assessor_v2.py` for test scenarios
+
+### Introduction to Synthetic Cognition
+
+*Introduction to Synthetic Cognition* defines Synthetic Cognition as a governed, persistent, adaptive, and distributed cognitive architecture integrating identity, memory, context engineering, reasoning, learning, perception, and external action.
+
+Persona Engineering is positioned as the identity and governance layer of the architecture.
+
+[View the Version 1.0 release](https://github.com/genearguelles-hue/PersonaEngineering/releases/tag/synthetic-cognition-v1.0.0)
