@@ -101,6 +101,17 @@ See:
 - `demo/python/run_assessor.py` to execute the assessor
 - `demo/python/test_assessor_v2.py` for test scenarios
 
+## JMeter Performance Evidence
+
+`performance_test_harness` provides the Persona Engineering-owned coordinator
+for policy-constrained JMeter execution. It orders a run through the JMeter MCP
+adapter and records requested, started, and terminal events in an append-only,
+hash-chained performance Ledger. Completed events include the executor-generated
+artifact evidence manifest with SHA-256 digests.
+
+See `performance_test_harness/README.md` for the MCP command and Ledger
+verification workflow.
+
 ### Introduction to Synthetic Cognition
 
 *Introduction to Synthetic Cognition* defines Synthetic Cognition as a governed, persistent, adaptive, and distributed cognitive architecture integrating identity, memory, context engineering, reasoning, learning, perception, and external action.

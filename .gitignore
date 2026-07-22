@@ -19,3 +19,5 @@ persona_import_agent/
 
 # Local/generated backend runtime files
 persona_backend/ledger/
+persona_ledger/performance_run_events.jsonl
+persona_ledger/performance_run_events.jsonl.lock
