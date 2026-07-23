@@ -107,10 +107,13 @@ See:
 for policy-constrained JMeter execution. It orders a run through the JMeter MCP
 adapter and records requested, started, and terminal events in an append-only,
 hash-chained performance Ledger. Completed events include the executor-generated
-artifact evidence manifest with SHA-256 digests.
+artifact evidence manifest and machine-readable metrics, bound by the JTL
+SHA-256 digest. A PE-owned assessor applies a versioned threshold policy and
+records a `pass`, `fail`, or `insufficient_evidence` verdict. JSON and Markdown
+reports are generated from the verified Ledger.
 
 See `performance_test_harness/README.md` for the MCP command and Ledger
-verification workflow.
+verification, assessment-policy, and reporting workflow.
 
 ### Introduction to Synthetic Cognition
 

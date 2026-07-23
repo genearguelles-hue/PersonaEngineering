@@ -1,0 +1,287 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://persona.engineering/schemas/performance_run_event_v2.schema.json",
+  "title": "Persona Engineering Assessed Performance Run Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "event_type", "event_id", "run_id", "correlation_id",
+    "sequence", "occurred_at", "recorded_at", "initiator", "plan",
+    "property_names", "contracts", "status", "ledger"
+  ],
+  "properties": {
+    "schema_version": {"const": "pe.performance.run.event.v2"},
+    "event_type": {
+      "enum": [
+        "performance.run.requested", "performance.run.started",
+        "performance.run.completed", "performance.run.failed",
+        "performance.run.timed_out", "performance.run.error"
+      ]
+    },
+    "event_id": {"type": "string", "format": "uuid"},
+    "run_id": {"type": "string", "pattern": "^[a-f0-9]{8,32}$"},
+    "correlation_id": {"type": "string", "format": "uuid"},
+    "sequence": {"type": "integer", "minimum": 1, "maximum": 3},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "recorded_at": {"type": "string", "format": "date-time"},
+    "initiator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["component"],
+      "properties": {"component": {"type": "string", "minLength": 1}}
+    },
+    "plan": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*\\.jmx$"
+    },
+    "property_names": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,127}$"}
+    },
+    "contracts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mcp", "executor", "evidence", "metrics", "assessment", "report"],
+      "properties": {
+        "mcp": {"const": "pe.jmeter.mcp.v1"},
+        "executor": {"const": "pe.jmeter.cli.v1"},
+        "evidence": {"const": "pe.jmeter.evidence.v1"},
+        "metrics": {"const": "pe.jmeter.metrics.v1"},
+        "assessment": {"const": "pe.performance.assessment.v1"},
+        "report": {"const": "pe.performance.report.v1"}
+      }
+    },
+    "status": {
+      "enum": ["requested", "running", "completed", "failed", "timed_out", "error"]
+    },
+    "executor_timing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["started_at_epoch", "finished_at_epoch", "duration_seconds", "return_code"],
+      "properties": {
+        "started_at_epoch": {"type": ["number", "null"]},
+        "finished_at_epoch": {"type": ["number", "null"]},
+        "duration_seconds": {"type": ["number", "null"], "minimum": 0},
+        "return_code": {"type": ["integer", "null"]}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ok", "schema_version", "run_id", "plan", "status", "generated_at", "artifacts"],
+      "properties": {
+        "ok": {"type": "boolean"},
+        "schema_version": {"const": "pe.jmeter.evidence.v1"},
+        "run_id": {"type": "string", "pattern": "^[a-f0-9]{8,32}$"},
+        "plan": {"type": "string"},
+        "status": {"type": "string"},
+        "generated_at": {"type": "string", "format": "date-time"},
+        "artifacts": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {"$ref": "#/$defs/artifact"}
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ok", "schema_version", "run_id", "plan", "status",
+        "generated_at", "source_jtl", "summary"
+      ],
+      "properties": {
+        "ok": {"const": true},
+        "schema_version": {"const": "pe.jmeter.metrics.v1"},
+        "run_id": {"type": "string", "pattern": "^[a-f0-9]{8,32}$"},
+        "plan": {"type": "string"},
+        "status": {"type": "string"},
+        "generated_at": {"type": "string", "format": "date-time"},
+        "source_jtl": {"$ref": "#/$defs/artifact"},
+        "summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sample_count", "success_count", "error_count", "error_rate",
+            "duration_seconds", "throughput_per_second", "received_bytes",
+            "sent_bytes", "response_codes", "samples_by_label", "elapsed_ms",
+            "latency_ms", "connect_ms"
+          ],
+          "properties": {
+            "sample_count": {"type": "integer", "minimum": 0},
+            "success_count": {"type": "integer", "minimum": 0},
+            "error_count": {"type": "integer", "minimum": 0},
+            "error_rate": {"type": "number", "minimum": 0, "maximum": 1},
+            "duration_seconds": {"type": "number", "minimum": 0},
+            "throughput_per_second": {"type": "number", "minimum": 0},
+            "received_bytes": {"type": "integer", "minimum": 0},
+            "sent_bytes": {"type": "integer", "minimum": 0},
+            "response_codes": {
+              "type": "object",
+              "additionalProperties": {"type": "integer", "minimum": 0}
+            },
+            "samples_by_label": {
+              "type": "object",
+              "additionalProperties": {"type": "integer", "minimum": 0}
+            },
+            "elapsed_ms": {"$ref": "#/$defs/distribution"},
+            "latency_ms": {"$ref": "#/$defs/distribution"},
+            "connect_ms": {"$ref": "#/$defs/distribution"}
+          }
+        }
+      }
+    },
+    "assessment": {"$ref": "#/$defs/assessment"},
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "message"],
+      "properties": {
+        "type": {"type": "string"},
+        "message": {"type": "string", "maxLength": 1000}
+      }
+    },
+    "ledger": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["previous_event_hash", "event_hash"],
+      "properties": {
+        "previous_event_hash": {
+          "oneOf": [
+            {"type": "null"},
+            {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+          ]
+        },
+        "event_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    }
+  },
+  "$defs": {
+    "distribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "max", "mean", "median", "p90", "p95", "p99"],
+      "properties": {
+        "min": {"type": ["number", "null"], "minimum": 0},
+        "max": {"type": ["number", "null"], "minimum": 0},
+        "mean": {"type": ["number", "null"], "minimum": 0},
+        "median": {"type": ["number", "null"], "minimum": 0},
+        "p90": {"type": ["number", "null"], "minimum": 0},
+        "p95": {"type": ["number", "null"], "minimum": 0},
+        "p99": {"type": ["number", "null"], "minimum": 0}
+      }
+    },
+    "assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version", "run_id", "evaluated_at", "verdict",
+        "source_jtl_sha256", "policy", "checks"
+      ],
+      "properties": {
+        "schema_version": {"const": "pe.performance.assessment.v1"},
+        "run_id": {"type": "string", "pattern": "^[a-f0-9]{8,32}$"},
+        "evaluated_at": {"type": "string", "format": "date-time"},
+        "verdict": {"enum": ["pass", "fail", "insufficient_evidence"]},
+        "source_jtl_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version", "policy_id", "min_sample_count",
+            "max_error_rate", "max_p95_elapsed_ms",
+            "min_throughput_per_second"
+          ],
+          "properties": {
+            "schema_version": {"const": "pe.performance.policy.v1"},
+            "policy_id": {"type": "string", "minLength": 1, "maxLength": 128},
+            "min_sample_count": {"type": "integer", "minimum": 1},
+            "max_error_rate": {"type": "number", "minimum": 0, "maximum": 1},
+            "max_p95_elapsed_ms": {"type": "number", "minimum": 0},
+            "min_throughput_per_second": {"type": "number", "minimum": 0}
+          }
+        },
+        "checks": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "operator", "actual", "threshold", "passed"],
+            "properties": {
+              "name": {"type": "string"},
+              "operator": {"enum": ["<=", ">="]},
+              "actual": {"type": ["number", "null"]},
+              "threshold": {"type": "number"},
+              "passed": {"type": "boolean"}
+            }
+          }
+        }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "exists", "size_bytes", "sha256"],
+      "properties": {
+        "path": {"type": "string"},
+        "exists": {"type": "boolean"},
+        "size_bytes": {"type": ["integer", "null"], "minimum": 0},
+        "sha256": {
+          "oneOf": [
+            {"type": "null"},
+            {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"exists": {"const": true}}},
+          "then": {
+            "properties": {
+              "size_bytes": {"type": "integer", "minimum": 0},
+              "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+            }
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"event_type": {"const": "performance.run.requested"}}},
+      "then": {"properties": {"sequence": {"const": 1}, "status": {"const": "requested"}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "performance.run.started"}}},
+      "then": {"properties": {"sequence": {"const": 2}, "status": {"const": "running"}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "performance.run.completed"}}},
+      "then": {
+        "required": ["executor_timing", "evidence", "metrics", "assessment"],
+        "properties": {"sequence": {"const": 3}, "status": {"const": "completed"}}
+      }
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "performance.run.failed"}}},
+      "then": {"properties": {"sequence": {"const": 3}, "status": {"const": "failed"}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "performance.run.timed_out"}}},
+      "then": {"properties": {"sequence": {"const": 3}, "status": {"const": "timed_out"}}}
+    },
+    {
+      "if": {"properties": {"event_type": {"const": "performance.run.error"}}},
+      "then": {
+        "required": ["error"],
+        "properties": {"sequence": {"const": 3}, "status": {"const": "error"}}
+      }
+    }
+  ]
+}

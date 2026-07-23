@@ -21,3 +21,4 @@ persona_import_agent/
 persona_backend/ledger/
 persona_ledger/performance_run_events.jsonl
 persona_ledger/performance_run_events.jsonl.lock
+reports/performance/

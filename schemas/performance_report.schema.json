@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://persona.engineering/schemas/performance_report.schema.json",
+  "title": "Persona Engineering JMeter Performance Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "generated_at", "run_id", "correlation_id", "plan",
+    "status", "initiator", "contracts", "lifecycle", "executor_timing",
+    "evidence", "metrics", "assessment", "error", "ledger_verification"
+  ],
+  "properties": {
+    "schema_version": {"const": "pe.performance.report.v1"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "run_id": {"type": "string", "pattern": "^[a-f0-9]{8,32}$"},
+    "correlation_id": {"type": "string", "format": "uuid"},
+    "plan": {"type": "string"},
+    "status": {
+      "enum": ["completed", "failed", "timed_out", "error"]
+    },
+    "initiator": {
+      "type": "object",
+      "required": ["component"],
+      "properties": {"component": {"type": "string"}},
+      "additionalProperties": false
+    },
+    "contracts": {
+      "type": "object",
+      "required": ["mcp", "executor", "evidence"],
+      "properties": {
+        "mcp": {"const": "pe.jmeter.mcp.v1"},
+        "executor": {"const": "pe.jmeter.cli.v1"},
+        "evidence": {"const": "pe.jmeter.evidence.v1"},
+        "metrics": {"const": "pe.jmeter.metrics.v1"},
+        "assessment": {"const": "pe.performance.assessment.v1"},
+        "report": {"const": "pe.performance.report.v1"}
+      },
+      "additionalProperties": false
+    },
+    "lifecycle": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sequence", "event_id", "event_type", "occurred_at", "status"
+        ],
+        "properties": {
+          "sequence": {"type": "integer", "minimum": 1, "maximum": 3},
+          "event_id": {"type": "string", "format": "uuid"},
+          "event_type": {"type": "string"},
+          "occurred_at": {"type": "string", "format": "date-time"},
+          "status": {"type": "string"}
+        }
+      }
+    },
+    "executor_timing": {"type": ["object", "null"]},
+    "evidence": {"type": ["object", "null"]},
+    "metrics": {"type": ["object", "null"]},
+    "assessment": {"type": ["object", "null"]},
+    "error": {"type": ["object", "null"]},
+    "ledger_verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ok", "errors", "terminal_event_hash"],
+      "properties": {
+        "ok": {"const": true},
+        "errors": {"type": "array", "maxItems": 0},
+        "terminal_event_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    }
+  }
+}
