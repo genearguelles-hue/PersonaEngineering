@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://persona.engineering/schemas/performance_assessment.schema.json",
+  "title": "Persona Engineering Performance Assessment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "run_id", "evaluated_at", "verdict",
+    "source_jtl_sha256", "policy", "checks"
+  ],
+  "properties": {
+    "schema_version": {"const": "pe.performance.assessment.v1"},
+    "run_id": {"type": "string", "pattern": "^[a-f0-9]{8,32}$"},
+    "evaluated_at": {"type": "string", "format": "date-time"},
+    "verdict": {"enum": ["pass", "fail", "insufficient_evidence"]},
+    "source_jtl_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version", "policy_id", "min_sample_count",
+        "max_error_rate", "max_p95_elapsed_ms", "min_throughput_per_second"
+      ],
+      "properties": {
+        "schema_version": {"const": "pe.performance.policy.v1"},
+        "policy_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "min_sample_count": {"type": "integer", "minimum": 1},
+        "max_error_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "max_p95_elapsed_ms": {"type": "number", "minimum": 0},
+        "min_throughput_per_second": {"type": "number", "minimum": 0}
+      }
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "operator", "actual", "threshold", "passed"],
+        "properties": {
+          "name": {"type": "string"},
+          "operator": {"enum": ["<=", ">="]},
+          "actual": {"type": ["number", "null"]},
+          "threshold": {"type": "number"},
+          "passed": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}

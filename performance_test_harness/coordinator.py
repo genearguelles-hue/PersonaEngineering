@@ -9,16 +9,28 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Protocol
 
+from performance_test_harness.assessment import (
+    ASSESSMENT_SCHEMA_VERSION,
+    METRICS_SCHEMA_VERSION,
+    PerformancePolicy,
+    assess_metrics,
+    validate_metrics,
+)
 from performance_test_harness.ledger_writer import (
     DEFAULT_LEDGER_PATH,
     append_performance_run_event,
 )
+from performance_test_harness.reporting import (
+    DEFAULT_REPORTS_DIR,
+    generate_performance_run_report,
+)
 
 
-EVENT_SCHEMA_VERSION = "pe.performance.run.event.v1"
+EVENT_SCHEMA_VERSION = "pe.performance.run.event.v2"
 MCP_SCHEMA_VERSION = "pe.jmeter.mcp.v1"
 CLI_SCHEMA_VERSION = "pe.jmeter.cli.v1"
 EVIDENCE_SCHEMA_VERSION = "pe.jmeter.evidence.v1"
+REPORT_SCHEMA_VERSION = "pe.performance.report.v1"
 RUN_ID_RE = re.compile(r"^[a-f0-9]{8,32}$")
 PLAN_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*\.jmx$")
 PROPERTY_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_.-]{0,127}$")
@@ -43,10 +55,14 @@ class PerformanceRunCoordinator:
         *,
         ledger_path: Path = DEFAULT_LEDGER_PATH,
         initiator: str = "persona-engineering.performance-test-harness",
+        policy: PerformancePolicy | None = None,
+        reports_dir: Path = DEFAULT_REPORTS_DIR,
     ) -> None:
         self.client = client
         self.ledger_path = Path(ledger_path)
         self.initiator = initiator
+        self.policy = policy or PerformancePolicy()
+        self.reports_dir = Path(reports_dir)
 
     def run(
         self,
@@ -70,6 +86,9 @@ class PerformanceRunCoordinator:
                 "mcp": MCP_SCHEMA_VERSION,
                 "executor": CLI_SCHEMA_VERSION,
                 "evidence": EVIDENCE_SCHEMA_VERSION,
+                "metrics": METRICS_SCHEMA_VERSION,
+                "assessment": ASSESSMENT_SCHEMA_VERSION,
+                "report": REPORT_SCHEMA_VERSION,
             },
         }
         self._record(base, "performance.run.requested", "requested", 1)
@@ -106,9 +125,42 @@ class PerformanceRunCoordinator:
             if status not in {"completed", "failed", "timed_out", "error"}:
                 raise CoordinatorError(f"Unsupported JMeter terminal status: {status}")
 
+            assessment: dict[str, Any] | None = None
+            if status == "completed":
+                metrics_response = self.client.call_tool(
+                    "jmeter_metrics_summary", {"run_id": run_id}
+                )
+                metrics = self._trusted_result(
+                    metrics_response, "jmeter_metrics_summary"
+                )
+                validate_metrics(
+                    metrics,
+                    run_id=run_id,
+                    plan=plan,
+                    evidence_jtl_sha256=self._evidence_jtl_sha(manifest),
+                )
+                assessment = assess_metrics(metrics, policy=self.policy)
+                terminal_extra["metrics"] = metrics
+                terminal_extra["assessment"] = assessment
+
             terminal = self._record(
                 base, terminal_type, status, 3, extra=terminal_extra
             )
+            report: dict[str, Any]
+            try:
+                report = generate_performance_run_report(
+                    run_id,
+                    ledger_path=self.ledger_path,
+                    reports_dir=self.reports_dir,
+                )
+            except Exception as report_error:
+                report = {
+                    "ok": False,
+                    "error": {
+                        "type": type(report_error).__name__,
+                        "message": str(report_error)[:1000],
+                    },
+                }
             return {
                 "ok": status == "completed",
                 "schema_version": "pe.performance.run.result.v1",
@@ -117,6 +169,15 @@ class PerformanceRunCoordinator:
                 "status": status,
                 "terminal_event_id": terminal["event_id"],
                 "ledger_path": str(self.ledger_path),
+                "assessment_verdict": (
+                    assessment["verdict"] if assessment is not None else None
+                ),
+                "performance_accepted": (
+                    assessment["verdict"] == "pass"
+                    if assessment is not None
+                    else False
+                ),
+                "report": report,
             }
         except Exception as exc:
             error = exc if isinstance(exc, CoordinatorError) else CoordinatorError(str(exc))
@@ -204,6 +265,16 @@ class PerformanceRunCoordinator:
                 digest = artifact.get("sha256")
                 if not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest):
                     raise CoordinatorError(f"Invalid artifact hash: {name}")
+
+    @staticmethod
+    def _evidence_jtl_sha(manifest: dict[str, Any]) -> str:
+        jtl = manifest["artifacts"].get("jtl")
+        if not isinstance(jtl, dict) or not jtl.get("exists"):
+            raise CoordinatorError("Evidence manifest has no JTL artifact")
+        digest = jtl.get("sha256")
+        if not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest):
+            raise CoordinatorError("Evidence manifest has an invalid JTL hash")
+        return digest
 
     @staticmethod
     def _terminal_type(status: str) -> str:
