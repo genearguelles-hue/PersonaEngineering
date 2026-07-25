@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://persona.engineering/schemas/infrastructure/selenium-test-run.v1.schema.json",
+  "title": "Selenium Test Run",
+  "description": "Schema for Selenium test execution events produced by the Persona Engineering Selenium runner.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "event_type": {
+      "type": "string",
+      "const": "selenium_test_run"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "pe.selenium.run.v1"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 8
+    },
+    "timestamp_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "persona_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "domain": {
+          "type": "string"
+        },
+        "execution_layer": {
+          "type": "string",
+          "const": "java_selenium"
+        },
+        "runner": {
+          "type": "string"
+        },
+        "test_framework": {
+          "type": "string"
+        },
+        "build_tool": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "domain",
+        "execution_layer",
+        "runner",
+        "test_framework",
+        "build_tool"
+      ]
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "module_path": {
+          "type": "string"
+        },
+        "stdout_log": {
+          "type": "string"
+        },
+        "started_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ended_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "exit_code": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "command",
+        "module_path",
+        "stdout_log",
+        "started_at",
+        "ended_at",
+        "exit_code"
+      ]
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "passed",
+            "failed"
+          ]
+        },
+        "tests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failures": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "errors": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skipped": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "testcases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "classname": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "passed",
+                  "failed",
+                  "error",
+                  "skipped"
+                ]
+              },
+              "time_seconds": {
+                "type": [
+                  "string",
+                  "number",
+                  "null"
+                ]
+              },
+              "details": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "classname",
+              "name",
+              "status",
+              "time_seconds",
+              "details"
+            ]
+          }
+        }
+      },
+      "required": [
+        "status",
+        "tests",
+        "failures",
+        "errors",
+        "skipped",
+        "testcases"
+      ]
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "surefire_reports": {
+          "type": "string"
+        },
+        "failure_screenshots": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "surefire_reports",
+        "failure_screenshots"
+      ]
+    }
+  },
+  "required": [
+    "event_type",
+    "schema_version",
+    "run_id",
+    "timestamp_utc",
+    "persona_context",
+    "execution",
+    "result",
+    "evidence"
+  ]
+}
