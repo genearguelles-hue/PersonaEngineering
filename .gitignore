@@ -22,3 +22,14 @@ persona_backend/ledger/
 persona_ledger/performance_run_events.jsonl
 persona_ledger/performance_run_events.jsonl.lock
 reports/performance/
+
+# Java / Maven build artifacts
+target/
+**/target/
+
+# Selenium runtime artifacts
+**/target/screenshots/
+**/target/surefire-reports/
+
+# OS/editor noise
+.DS_Store
