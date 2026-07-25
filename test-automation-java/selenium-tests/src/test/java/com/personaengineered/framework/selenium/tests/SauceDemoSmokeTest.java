@@ -1,5 +1,7 @@
 package com.personaengineered.framework.selenium.tests;
 
+import com.personaengineered.framework.selenium.extensions.ScreenshotOnFailureExtension;
+import org.junit.jupiter.api.extension.ExtendWith;
 import com.personaengineered.framework.selenium.base.BaseUiTest;
 import com.personaengineered.framework.selenium.pages.CartPage;
 import com.personaengineered.framework.selenium.pages.CheckoutCompletePage;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(ScreenshotOnFailureExtension.class)
 public class SauceDemoSmokeTest extends BaseUiTest {
 
     private static final String VALID_USERNAME = "standard_user";

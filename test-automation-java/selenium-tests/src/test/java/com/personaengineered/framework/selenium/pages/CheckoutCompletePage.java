@@ -1,5 +1,5 @@
 package com.personaengineered.framework.selenium.pages;
-
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -27,9 +27,26 @@ public class CheckoutCompletePage {
     }
 
     public LoginPage logout() {
+    WebElement menu = wait.until(ExpectedConditions.presenceOfElementLocated(menuButton));
+
+    try {
         wait.until(ExpectedConditions.elementToBeClickable(menuButton)).click();
-        wait.until(ExpectedConditions.elementToBeClickable(logoutLink)).click();
-        wait.until(ExpectedConditions.urlToBe("https://www.saucedemo.com/"));
-        return new LoginPage(driver);
+    } catch (Exception menuClickFailure) {
+        ((org.openqa.selenium.JavascriptExecutor) driver)
+                .executeScript("arguments[0].click();", menu);
     }
+
+    WebElement logout = wait.until(ExpectedConditions.presenceOfElementLocated(logoutLink));
+
+    try {
+        wait.until(ExpectedConditions.elementToBeClickable(logoutLink)).click();
+    } catch (Exception logoutClickFailure) {
+        ((org.openqa.selenium.JavascriptExecutor) driver)
+                .executeScript("arguments[0].click();", logout);
+    }
+
+    wait.until(ExpectedConditions.urlToBe("https://www.saucedemo.com/"));
+
+    return new LoginPage(driver);
+}
 }
