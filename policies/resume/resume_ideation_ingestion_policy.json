@@ -1,0 +1,151 @@
+{
+  "policy_id": "pe.resume_ideation_ingestion.v1",
+  "version": "0.1.0",
+  "status": "draft",
+  "purpose": "Convert governed resume-tailoring interactions into privacy-controlled, provenance-linked semantic memory for the Ideation Engine.",
+  "trigger": {
+    "event_type": "resume_mission_terminal",
+    "allowed_terminal_states": [
+      "completed",
+      "completed_with_findings"
+    ],
+    "requires": [
+      "authorization_decision=authorized",
+      "assessor_verdict=pass",
+      "ledger_chain_verified=true"
+    ]
+  },
+  "pipeline": [
+    "resolve_ledger_payload_references",
+    "classify_data",
+    "redact_excluded_fields",
+    "segment_by_semantic_unit",
+    "attach_provenance",
+    "score_learning_value",
+    "deduplicate",
+    "embed_eligible_chunks",
+    "record_embedding_receipt"
+  ],
+  "chunk_types": [
+    {
+      "type": "candidate_verified_fact",
+      "embedding_eligible": true,
+      "preferred_size_tokens": {
+        "minimum": 80,
+        "target": 220,
+        "maximum": 400
+      }
+    },
+    {
+      "type": "job_requirement",
+      "embedding_eligible": true,
+      "preferred_size_tokens": {
+        "minimum": 40,
+        "target": 140,
+        "maximum": 260
+      }
+    },
+    {
+      "type": "requirement_evidence_mapping",
+      "embedding_eligible": true,
+      "preferred_size_tokens": {
+        "minimum": 100,
+        "target": 280,
+        "maximum": 500
+      }
+    },
+    {
+      "type": "user_positioning_preference",
+      "embedding_eligible": true,
+      "preferred_size_tokens": {
+        "minimum": 40,
+        "target": 140,
+        "maximum": 260
+      }
+    },
+    {
+      "type": "user_correction",
+      "embedding_eligible": true,
+      "priority": "highest",
+      "preferred_size_tokens": {
+        "minimum": 50,
+        "target": 180,
+        "maximum": 320
+      }
+    },
+    {
+      "type": "unsupported_claim_pattern",
+      "embedding_eligible": true,
+      "retrieval_constraint": "negative_evidence_only",
+      "preferred_size_tokens": {
+        "minimum": 70,
+        "target": 190,
+        "maximum": 340
+      }
+    },
+    {
+      "type": "assessor_finding",
+      "embedding_eligible": true,
+      "preferred_size_tokens": {
+        "minimum": 70,
+        "target": 200,
+        "maximum": 360
+      }
+    },
+    {
+      "type": "application_outcome",
+      "embedding_eligible": true,
+      "preferred_size_tokens": {
+        "minimum": 50,
+        "target": 160,
+        "maximum": 300
+      }
+    }
+  ],
+  "always_exclude_from_embeddings": [
+    "personal_email_address",
+    "personal_phone_number",
+    "street_address",
+    "government_identifier",
+    "account_credentials",
+    "authentication_token",
+    "private_reference_contact_details",
+    "protected_characteristic",
+    "unapproved_third_party_personal_data",
+    "raw_document_binary"
+  ],
+  "provenance_fields": [
+    "chunk_id",
+    "mission_id",
+    "ledger_event_ids",
+    "persona_id",
+    "persona_version",
+    "source_refs",
+    "source_hashes",
+    "assessor_verdict",
+    "privacy_transform_version",
+    "supersedes_chunk_ids",
+    "valid_from",
+    "valid_to"
+  ],
+  "retrieval_rules": [
+    "User corrections outrank all inferred or older chunks.",
+    "Canonical verified facts outrank accepted artifact wording.",
+    "Negative-evidence chunks may prevent a claim but may never support a claim.",
+    "Job-specific stylistic choices do not become global preferences without repeated confirmation.",
+    "Superseded chunks remain provenance-visible but are excluded from positive retrieval."
+  ],
+  "ledger_receipt": {
+    "event_type": "resume_ideation_embeddings_recorded",
+    "required_fields": [
+      "mission_id",
+      "policy_id",
+      "embedding_model_id",
+      "embedded_chunk_ids",
+      "excluded_chunk_ids",
+      "exclusion_reasons",
+      "vector_collection",
+      "embedding_manifest_hash"
+    ]
+  }
+}

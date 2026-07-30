@@ -34,6 +34,14 @@
       "status": "draft",
       "file": "the_coherent_voice.persona.json",
       "description": "Brand voice persona for coherent professional profile promotion."
+    },
+    {
+      "id": "pe.resume_tailoring_specialist",
+      "name": "Resume Tailoring Specialist",
+      "version": "0.1.0",
+      "status": "draft",
+      "file": "resume_tailoring_specialist.persona.json",
+      "description": "Produces truthful, evidence-bounded, job-specific resumes through governed career-evidence transformation."
     }
   ]
 }
