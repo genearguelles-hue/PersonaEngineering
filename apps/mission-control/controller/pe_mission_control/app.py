@@ -7,10 +7,12 @@ from fastapi import FastAPI, HTTPException, Response, WebSocket, WebSocketDiscon
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import __version__
-from .adapters import SeleniumPeCliAdapter
+from .adapters import ResumeTailoringAdapter, SeleniumPeCliAdapter
 from .config import Settings
 from .ledger import MissionLedger
 from .mission_service import MissionNotFoundError, MissionService
+from .resume_api import build_resume_router
+from .resume_workflow import ResumeWorkflowService
 from .models import (
     BehavioralIncidentCreate,
     MissionEnvelope,
@@ -30,8 +32,13 @@ from .registry import AdapterRegistry
 settings = Settings.from_environment()
 registry = AdapterRegistry()
 registry.register(SeleniumPeCliAdapter(settings))
+resume_tailoring_adapter = ResumeTailoringAdapter(settings)
+registry.register(resume_tailoring_adapter)
 ledger = MissionLedger(settings.data_dir)
 missions = MissionService(registry, ledger)
+resume_workflows = ResumeWorkflowService(
+    registry, ledger, resume_tailoring_adapter
+)
 persona_governance = PersonaGovernanceStore(settings.data_dir)
 
 app = FastAPI(
@@ -46,6 +53,9 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
 )
+
+
+app.include_router(build_resume_router(resume_workflows))
 
 
 @app.get("/api/v1/health", response_model=SystemHealth)

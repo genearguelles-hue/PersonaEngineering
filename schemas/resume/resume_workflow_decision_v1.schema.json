@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://persona.engineering/schemas/resume/resume_workflow_decision_v1.schema.json",
+  "title": "Resume Workflow Human Decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "decision",
+    "reviewer_id"
+  ],
+  "properties": {
+    "decision": {
+      "enum": [
+        "approve",
+        "revise"
+      ]
+    },
+    "reviewer_id": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 128
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 4000
+    },
+    "corrections": {
+      "type": "array",
+      "maxItems": 25,
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "revise"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "corrections"
+        ],
+        "properties": {
+          "corrections": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "approve"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "corrections": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "schema_version": "pe.mission-control.launch.v1",
+  "mission_id": "pe-resume-phase2-synthetic-001",
+  "name": "Resume Tailoring Phase 2 synthetic governed mission",
+  "mission_type": "resume_tailoring",
+  "governance_mode": "governed",
+  "persona_binding": {
+    "persona_id": "pe.resume_tailoring_specialist",
+    "version": "0.1.0"
+  },
+  "tool": {
+    "adapter_id": "resume-tailor",
+    "action": "smoke",
+    "parameters": {
+      "fixture": true,
+      "resume_mission": {
+        "schema_version": "pe.resume_tailoring.mission.v1",
+        "mission_type": "resume_tailoring",
+        "mode": "governed",
+        "persona_binding": {
+          "persona_id": "pe.resume_tailoring_specialist",
+          "minimum_version": "0.1.0"
+        },
+        "candidate_source_refs": [
+          {
+            "source_id": "synthetic-career-profile",
+            "source_type": "canonical_profile",
+            "uri": "fixture://resume/candidate-profile",
+            "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "authorization": "user_authorized"
+          }
+        ],
+        "target_job": {
+          "description_ref": {
+            "source_id": "synthetic-job-description",
+            "source_type": "job_description",
+            "uri": "fixture://resume/job-description",
+            "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "authorization": "user_authorized"
+          },
+          "employer": "Synthetic Employer",
+          "role_title": "AI Automation Engineer"
+        },
+        "strategy": {
+          "positioning": "Evidence-bounded AI automation and governance",
+          "must_include": [
+            "Persona Engineering"
+          ],
+          "must_exclude": [],
+          "tone": "hybrid"
+        },
+        "output": {
+          "format": "markdown",
+          "page_target": 2,
+          "application_ready_requires_user_approval": true
+        },
+        "privacy": {
+          "ledger_payload_mode": "hash_and_reference",
+          "embedding_policy_id": "pe.resume_ideation_ingestion.v1",
+          "allow_employer_names_in_embeddings": false
+        },
+        "governance": {
+          "require_pre_execution_authorization": true,
+          "require_persona_assessment": true,
+          "require_ledger_terminal_event": true,
+          "require_zero_unsupported_claims": true,
+          "minimum_requirement_coverage": 0.75
+        }
+      }
+    }
+  },
+  "objectives": [
+    "Exercise all thirteen resume-specific Ledger event types",
+    "Verify the independent Assessor and user revision checkpoint",
+    "Verify privacy-sanitized deterministic fixture embeddings",
+    "Verify the final hash chain and sealed evidence manifest"
+  ],
+  "constraints": {
+    "synthetic_only": true,
+    "no_external_submission": true,
+    "requires_user_final_approval": true
+  },
+  "telemetry": {
+    "capture_token_usage": true,
+    "capture_revision_count": true
+  }
+}
