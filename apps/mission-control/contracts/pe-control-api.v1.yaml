@@ -1,0 +1,480 @@
+openapi: 3.1.0
+info:
+  title: Persona Engineering Control API
+  version: 1.0.0
+  description: >
+    Local control-plane API for Persona Engineering Mission Control. It
+    validates, authorizes, dispatches, observes, and records missions through
+    normalized tool adapters.
+servers:
+  - url: http://127.0.0.1:8765
+paths:
+  /api/v1/health:
+    get:
+      operationId: getHealth
+      responses:
+        "200":
+          description: Controller and adapter health
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemHealth"
+  /api/v1/adapters:
+    get:
+      operationId: listAdapters
+      responses:
+        "200":
+          description: Registered adapter descriptors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Adapter"
+  /api/v1/missions/validate:
+    post:
+      operationId: validateMission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MissionEnvelope"
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResult"
+  /api/v1/missions:
+    post:
+      operationId: createMission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MissionEnvelope"
+      responses:
+        "202":
+          description: Mission accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MissionRecord"
+  /api/v1/missions/{mission_id}:
+    get:
+      operationId: getMission
+      parameters:
+        - $ref: "#/components/parameters/MissionId"
+      responses:
+        "200":
+          description: Current mission state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MissionRecord"
+        "404":
+          description: Mission not found
+  /api/v1/missions/{mission_id}/events:
+    get:
+      operationId: getMissionEvents
+      parameters:
+        - $ref: "#/components/parameters/MissionId"
+      responses:
+        "200":
+          description: Ordered hash-chained mission events
+  /api/v1/missions/{mission_id}/evidence:
+    get:
+      operationId: getMissionEvidence
+      parameters:
+        - $ref: "#/components/parameters/MissionId"
+      responses:
+        "200":
+          description: Evidence manifest
+  /api/v1/missions/{mission_id}/cancel:
+    post:
+      operationId: cancelMission
+      parameters:
+        - $ref: "#/components/parameters/MissionId"
+      responses:
+        "202":
+          description: Cancellation accepted
+  /api/v1/behavioral-incidents:
+    get:
+      operationId: listBehavioralIncidents
+      responses:
+        "200":
+          description: Behavioral observations kept distinct from tool failures
+    post:
+      operationId: createBehavioralIncident
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BehavioralIncidentCreate"
+      responses:
+        "201":
+          description: Behavioral incident recorded
+  /api/v1/behavioral-incidents/{incident_id}:
+    get:
+      operationId: getBehavioralIncident
+      parameters:
+        - name: incident_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Behavioral incident
+        "404":
+          description: Incident not found
+  /api/v1/persona-delta-proposals:
+    get:
+      operationId: listPersonaDeltaProposals
+      responses:
+        "200":
+          description: Proposal-only persona deltas
+    post:
+      operationId: createPersonaDeltaProposal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonaDeltaProposalCreate"
+      responses:
+        "201":
+          description: Proposal recorded; no persona mutation performed
+  /api/v1/persona-delta-proposals/{proposal_id}/review:
+    post:
+      operationId: reviewPersonaDeltaProposal
+      parameters:
+        - $ref: "#/components/parameters/ProposalId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProposalReviewRequest"
+      responses:
+        "200":
+          description: Review recorded; approval does not apply the proposal
+        "409":
+          description: Proposal has already received an immutable review
+  /api/v1/persona-delta-proposals/{proposal_id}/regression-comparisons:
+    get:
+      operationId: listRegressionComparisons
+      parameters:
+        - $ref: "#/components/parameters/ProposalId"
+      responses:
+        "200":
+          description: Baseline-to-candidate regression evidence
+    post:
+      operationId: createRegressionComparison
+      parameters:
+        - $ref: "#/components/parameters/ProposalId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegressionComparisonCreate"
+      responses:
+        "201":
+          description: Regression comparison recorded
+  /api/v1/personas/{persona_id}/versions:
+    get:
+      operationId: listPersonaVersions
+      parameters:
+        - name: persona_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Active baseline and unapplied candidate versions
+  /api/v1/persona-governance/integrity:
+    get:
+      operationId: verifyPersonaGovernanceLedger
+      responses:
+        "200":
+          description: Persona governance audit-chain verification
+components:
+  parameters:
+    MissionId:
+      name: mission_id
+      in: path
+      required: true
+      schema:
+        type: string
+    ProposalId:
+      name: proposal_id
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    SystemHealth:
+      type: object
+      required: [status, service, version, execution_mode, adapters]
+      properties:
+        status:
+          enum: [healthy, degraded]
+        service:
+          const: pe-mission-control
+        version:
+          type: string
+        execution_mode:
+          enum: [fixture, real]
+        adapters:
+          type: array
+          items:
+            type: object
+    Adapter:
+      type: object
+      required: [adapter_id, display_name, version, transport, domain, capabilities]
+      properties:
+        adapter_id:
+          type: string
+        display_name:
+          type: string
+        version:
+          type: string
+        transport:
+          enum: [cli, mcp, http, hybrid]
+        domain:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+    MissionEnvelope:
+      type: object
+      required:
+        - schema_version
+        - name
+        - mission_type
+        - governance_mode
+        - persona_binding
+        - tool
+      properties:
+        schema_version:
+          const: pe.mission-control.launch.v1
+        mission_id:
+          type: string
+        name:
+          type: string
+        mission_type:
+          enum: [web_test, performance_test, api_test, ai_evaluation]
+        governance_mode:
+          enum: [governed, ungoverned]
+        persona_binding:
+          type: object
+          required: [persona_id]
+          properties:
+            persona_id:
+              type: string
+            version:
+              type: string
+        tool:
+          type: object
+          required: [adapter_id, action, parameters]
+          properties:
+            adapter_id:
+              type: string
+            action:
+              type: string
+            parameters:
+              type: object
+        objectives:
+          type: array
+          items:
+            type: string
+        constraints:
+          type: object
+    ValidationResult:
+      type: object
+      required: [valid, errors]
+      properties:
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: string
+    MissionRecord:
+      type: object
+      required:
+        - mission_id
+        - state
+        - governance_mode
+        - adapter_id
+        - created_at
+        - updated_at
+      properties:
+        mission_id:
+          type: string
+        state:
+          enum:
+            - accepted
+            - authorized
+            - running
+            - completed
+            - failed
+            - cancelled
+        governance_mode:
+          enum: [governed, ungoverned]
+        adapter_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        result:
+          type: object
+    BehavioralIncidentCreate:
+      type: object
+      additionalProperties: false
+      required:
+        - persona_id
+        - persona_version
+        - classification
+        - title
+        - description
+        - reported_by
+      properties:
+        mission_id:
+          type: string
+        persona_id:
+          type: string
+        persona_version:
+          type: string
+        classification:
+          enum:
+            - behavioral_deviation
+            - policy_violation
+            - inconsistent_output
+            - boundary_breach
+            - other
+        title:
+          type: string
+        description:
+          type: string
+        evidence_refs:
+          type: array
+          items:
+            type: string
+        reported_by:
+          type: string
+    PrimitiveChange:
+      type: object
+      additionalProperties: false
+      required: [primitive_id, operation, rationale]
+      properties:
+        primitive_id:
+          type: string
+        operation:
+          enum: [add, replace, remove]
+        current_value: {}
+        proposed_value: {}
+        rationale:
+          type: string
+    PersonaDeltaProposalCreate:
+      type: object
+      additionalProperties: false
+      required:
+        - incident_id
+        - persona_id
+        - base_version
+        - proposed_version
+        - title
+        - hypothesis
+        - primitive_changes
+        - proposed_by
+      properties:
+        incident_id:
+          type: string
+        persona_id:
+          type: string
+        base_version:
+          type: string
+        proposed_version:
+          type: string
+        title:
+          type: string
+        hypothesis:
+          type: string
+        primitive_changes:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/PrimitiveChange"
+        safety_constraints:
+          type: array
+          items:
+            type: string
+        regression_objectives:
+          type: array
+          items:
+            type: string
+        proposed_by:
+          type: string
+    ProposalReviewRequest:
+      type: object
+      additionalProperties: false
+      required: [decision, reviewer_id, notes]
+      properties:
+        decision:
+          enum: [approve, reject]
+        reviewer_id:
+          type: string
+        notes:
+          type: string
+    RegressionComparisonCreate:
+      type: object
+      additionalProperties: false
+      required: [metrics, verdict, recorded_by]
+      properties:
+        baseline_mission_id:
+          type: string
+        candidate_mission_id:
+          type: string
+        metrics:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required:
+              - metric
+              - baseline
+              - candidate
+              - unit
+              - objective
+              - passed
+            properties:
+              metric:
+                type: string
+              baseline:
+                type: number
+              candidate:
+                type: number
+              unit:
+                type: string
+              objective:
+                enum: [increase, decrease, maintain]
+              passed:
+                type: boolean
+        verdict:
+          enum: [pass, fail, incomplete]
+        notes:
+          type: string
+        recorded_by:
+          type: string

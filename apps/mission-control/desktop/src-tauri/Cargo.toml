@@ -1,0 +1,18 @@
+[package]
+name = "pe-mission-control"
+version = "0.2.1"
+description = "Persona Engineering Mission Control"
+authors = ["Gene M. Arguelles"]
+edition = "2021"
+
+[lib]
+name = "pe_mission_control_desktop"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

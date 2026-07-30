@@ -1,0 +1,30 @@
+{
+  "comparative_run_id": "cmp-2996a0f35bc0",
+  "event_type": "pe_test_run_envelope",
+  "execution_layer": "java_selenium",
+  "execution_mode": "governed",
+  "schema_version": "pe.test-run.envelope.v1",
+  "status": "passed",
+  "summary": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "testcases": [
+      {
+        "classname": "com.personaengineered.framework.selenium.tests.SauceDemoSmokeTest",
+        "name": "validUserCanCompleteCheckoutSmokeFlow",
+        "status": "passed",
+        "time_seconds": "64.865"
+      },
+      {
+        "classname": "com.personaengineered.framework.selenium.tests.SauceDemoSmokeTest",
+        "name": "lockedOutUserCannotLogin",
+        "status": "passed",
+        "time_seconds": "12.562"
+      }
+    ],
+    "tests": 2
+  },
+  "tool": "selenium",
+  "tool_run_id": "5288a3c88745"
+}

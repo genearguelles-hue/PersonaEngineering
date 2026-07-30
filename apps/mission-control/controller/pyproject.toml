@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pe-mission-control"
+version = "0.2.1"
+description = "Persona Engineering Mission Control local control-plane API"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.116,<1",
+  "pydantic>=2.11,<3",
+  "uvicorn[standard]>=0.35,<1"
+]
+
+[project.optional-dependencies]
+test = [
+  "httpx>=0.28,<1",
+  "pytest>=8.4,<9"
+]
+
+[project.scripts]
+pe-mission-control = "pe_mission_control.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pe_mission_control*"]

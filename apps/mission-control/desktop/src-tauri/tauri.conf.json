@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Persona Engineering Mission Control",
+  "version": "0.2.1",
+  "identifier": "com.personaengineering.missioncontrol",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://127.0.0.1:1420",
+    "frontendDist": "../../frontend/dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Persona Engineering Mission Control",
+        "width": 1440,
+        "height": 940,
+        "minWidth": 1100,
+        "minHeight": 760,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src 'self' http://127.0.0.1:8765 ws://127.0.0.1:8765; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "category": "DeveloperTool",
+    "shortDescription": "Control plane for Persona Engineering",
+    "longDescription": "Authorize, execute, observe, and audit Persona Engineering missions."
+  }
+}

@@ -1,0 +1,45 @@
+diff --git a/pe_mission/assessor.py b/pe_mission/assessor.py
+--- a/pe_mission/assessor.py
++++ b/pe_mission/assessor.py
+@@ -24,13 +24,37 @@ def _check(
+     )
+
+
++def _normalized_selenium_summary(tool_result: dict[str, Any]) -> tuple[int, int, float]:
++    """Accept both pe.selenium fixture summaries and pe.test-run envelopes."""
++    summary = tool_result.get("summary", {})
++    failures = int(summary.get("failures", summary.get("failed", 0)))
++    errors = int(summary.get("errors", 0))
++    skipped = int(summary.get("skipped", 0))
++    failed = failures + errors
++
++    explicit_passed = summary.get("passed")
++    if explicit_passed is not None:
++        passed = int(explicit_passed)
++    else:
++        tests = int(summary.get("tests", len(summary.get("testcases", []))))
++        passed = max(0, tests - failed - skipped)
++
++    duration_value = summary.get("duration_seconds")
++    if duration_value is None:
++        duration = sum(
++            float(testcase.get("time_seconds", 0))
++            for testcase in summary.get("testcases", [])
++            if isinstance(testcase, dict)
++        )
++    else:
++        duration = float(duration_value)
++    return passed, failed, duration
++
++
+ def _selenium_checks(
+     mission: dict[str, Any],
+     tool_result: dict[str, Any],
+     checks: list[dict[str, Any]],
+ ) -> dict[str, Any]:
+-    summary = tool_result.get("summary", {})
+-    passed = int(summary.get("passed", 0))
+-    failed = int(summary.get("failed", 0))
+-    duration = float(summary.get("duration_seconds", 0))
++    passed, failed, duration = _normalized_selenium_summary(tool_result)
+     criteria = mission["acceptance_criteria"]

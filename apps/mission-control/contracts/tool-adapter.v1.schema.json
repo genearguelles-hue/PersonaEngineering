@@ -1,0 +1,223 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://persona.engineering/schemas/tool-adapter.v1.schema.json",
+  "title": "Persona Engineering Normalized Tool Adapter Contract",
+  "description": "Transport-neutral contract implemented by CLI, MCP, and HTTP tool adapters.",
+  "type": "object",
+  "required": ["schema_version", "descriptor", "operations"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "pe.tool-adapter.v1"
+    },
+    "descriptor": {
+      "$ref": "#/$defs/adapterDescriptor"
+    },
+    "operations": {
+      "type": "array",
+      "minItems": 9,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "discover",
+          "health",
+          "capabilities",
+          "configure",
+          "authorize",
+          "execute",
+          "status",
+          "cancel",
+          "collect_evidence",
+          "normalize_result",
+          "record_telemetry"
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "adapterDescriptor": {
+      "type": "object",
+      "required": [
+        "adapter_id",
+        "display_name",
+        "version",
+        "transport",
+        "domain",
+        "capabilities"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "adapter_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{2,63}$"
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+"
+        },
+        "transport": {
+          "enum": ["cli", "mcp", "http", "hybrid"]
+        },
+        "domain": {
+          "enum": [
+            "web_testing",
+            "performance_testing",
+            "api_testing",
+            "ai_evaluation",
+            "mobile_testing",
+            "cognition",
+            "other"
+          ]
+        },
+        "capabilities": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "executionRequest": {
+      "type": "object",
+      "required": [
+        "request_id",
+        "mission_id",
+        "action",
+        "parameters",
+        "timeout_seconds"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "type": "string"
+        },
+        "mission_id": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "object"
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600
+        },
+        "artifact_directory": {
+          "type": "string"
+        },
+        "governance_context": {
+          "type": "object"
+        }
+      }
+    },
+    "executionResult": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "request_id",
+        "mission_id",
+        "adapter_id",
+        "status",
+        "started_at",
+        "completed_at",
+        "duration_ms",
+        "evidence",
+        "telemetry"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "pe.tool-result.v1"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "mission_id": {
+          "type": "string"
+        },
+        "adapter_id": {
+          "type": "string"
+        },
+        "status": {
+          "enum": ["passed", "failed", "cancelled", "error"]
+        },
+        "started_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "duration_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "summary": {
+          "type": "string"
+        },
+        "exit_code": {
+          "type": ["integer", "null"]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["kind", "path"],
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "telemetry": {
+          "type": "object",
+          "properties": {
+            "input_tokens": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "output_tokens": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reasoning_tokens": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "total_tokens": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "estimated_cost_usd": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "raw_output": {
+          "type": "object"
+        },
+        "error": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "schema_version": "pe.mission-control.launch.v1",
+  "name": "SauceDemo governed checkout smoke",
+  "mission_type": "web_test",
+  "governance_mode": "governed",
+  "persona_binding": {
+    "persona_id": "test-executor",
+    "version": "1.0.0"
+  },
+  "tool": {
+    "adapter_id": "selenium",
+    "action": "run",
+    "parameters": {
+      "scenario": "saucedemo_checkout",
+      "target_url": "https://www.saucedemo.com/",
+      "browser": "chrome",
+      "headless": true,
+      "timeout_seconds": 120
+    }
+  },
+  "objectives": [
+    "Authenticate as the standard user",
+    "Add a product to the cart",
+    "Complete checkout",
+    "Capture auditable evidence"
+  ],
+  "constraints": {
+    "allowed_hosts": [
+      "www.saucedemo.com"
+    ],
+    "destructive_actions": false,
+    "evidence_required": true
+  },
+  "telemetry": {
+    "capture_token_usage": true,
+    "capture_duration": true,
+    "capture_tool_calls": true
+  }
+}

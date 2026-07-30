@@ -1,0 +1,70 @@
+{
+  "schema_version": "pe.mission.v1",
+  "mission_id": "pe-ui-20260726-001",
+  "mission_type": "ui_test",
+  "requested_at": "2026-07-26T16:00:00Z",
+  "requested_by": {
+    "actor_id": "gene",
+    "source": "dashboard"
+  },
+  "purpose": "Validate the SauceDemo checkout smoke path under PE governance.",
+  "persona_bindings": {
+    "planner": {
+      "persona_id": "test-designer",
+      "version": "1.0.0"
+    },
+    "executor": {
+      "persona_id": "test-executor",
+      "version": "1.0.0"
+    },
+    "assessor": {
+      "persona_id": "test-results-assessor",
+      "version": "1.0.0"
+    }
+  },
+  "tool_request": {
+    "tool": "selenium",
+    "capability": "selenium.execute_suite",
+    "operation": "run",
+    "parameters": {
+      "suite_id": "checkout-smoke",
+      "browser": "chrome",
+      "headless": true,
+      "base_url": "https://www.saucedemo.com",
+      "test_data_profile": "saucedemo-standard",
+      "tags": [
+        "smoke",
+        "checkout"
+      ]
+    }
+  },
+  "governance": {
+    "mode": "governed",
+    "risk_class": "low",
+    "approval_policy": "automatic_within_boundary",
+    "policy_set": "pe-test-execution.v1"
+  },
+  "constraints": {
+    "environment": "local",
+    "timeout_seconds": 120,
+    "max_retries": 0,
+    "network_scope": "allowlisted_targets_only"
+  },
+  "evidence_requirements": {
+    "ledger_required": true,
+    "report_required": true,
+    "screenshots": "failure_only",
+    "artifact_manifest": true,
+    "logs": true,
+    "retention_days": 30
+  },
+  "acceptance_criteria": {
+    "require_zero_failures": true,
+    "minimum_passed_tests": 2,
+    "maximum_duration_seconds": 120
+  },
+  "labels": {
+    "application": "saucedemo",
+    "release_gate": "smoke"
+  }
+}

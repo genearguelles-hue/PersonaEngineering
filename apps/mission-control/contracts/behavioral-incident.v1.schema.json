@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://persona.engineering/schemas/pe.behavioral-incident.v1.json",
+  "title": "Persona Engineering Behavioral Incident",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "incident_id",
+    "persona_id",
+    "persona_version",
+    "classification",
+    "title",
+    "description",
+    "evidence_refs",
+    "reported_by",
+    "status",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "pe.behavioral-incident.v1"
+    },
+    "incident_id": {
+      "type": "string",
+      "pattern": "^bi-[a-f0-9]{12}$"
+    },
+    "mission_id": {
+      "type": "string"
+    },
+    "persona_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "persona_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "classification": {
+      "enum": [
+        "behavioral_deviation",
+        "policy_violation",
+        "inconsistent_output",
+        "boundary_breach",
+        "other"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 160
+    },
+    "description": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 4000
+    },
+    "evidence_refs": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "string"
+      }
+    },
+    "reported_by": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 128
+    },
+    "status": {
+      "enum": ["open", "under_review", "resolved", "dismissed"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

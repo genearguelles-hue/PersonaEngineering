@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://persona.engineering/schemas/pe.persona-regression-comparison.v1.json",
+  "title": "Persona Engineering Persona Regression Comparison",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "comparison_id",
+    "proposal_id",
+    "persona_id",
+    "base_version",
+    "proposed_version",
+    "metrics",
+    "verdict",
+    "notes",
+    "recorded_by",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "pe.persona-regression-comparison.v1"
+    },
+    "comparison_id": {
+      "type": "string",
+      "pattern": "^prc-[a-f0-9]{12}$"
+    },
+    "proposal_id": {
+      "type": "string",
+      "pattern": "^pdp-[a-f0-9]{12}$"
+    },
+    "persona_id": {
+      "type": "string"
+    },
+    "base_version": {
+      "type": "string"
+    },
+    "proposed_version": {
+      "type": "string"
+    },
+    "baseline_mission_id": {
+      "type": "string"
+    },
+    "candidate_mission_id": {
+      "type": "string"
+    },
+    "metrics": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "metric",
+          "baseline",
+          "candidate",
+          "unit",
+          "objective",
+          "passed"
+        ],
+        "properties": {
+          "metric": {
+            "type": "string"
+          },
+          "baseline": {
+            "type": "number"
+          },
+          "candidate": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "objective": {
+            "enum": ["increase", "decrease", "maintain"]
+          },
+          "passed": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "verdict": {
+      "enum": ["pass", "fail", "incomplete"]
+    },
+    "notes": {
+      "type": "string"
+    },
+    "recorded_by": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
