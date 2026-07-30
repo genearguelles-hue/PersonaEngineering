@@ -3,12 +3,16 @@ from __future__ import annotations
 from typing import Any
 
 from .resume_models import ResumeAssessment
+from .resume_privacy import ResumePrivacyTransformer
 
 
 class ResumePersonaAssessor:
-    """Independent deterministic gate for the Phase 2 synthetic workflow."""
+    """Independent deterministic gate for synthetic and real shadow workflows."""
 
     assessor_id = "resume-persona-assessor@0.1.0"
+
+    def __init__(self, privacy: ResumePrivacyTransformer | None = None):
+        self.privacy = privacy or ResumePrivacyTransformer()
 
     def assess(
         self,
@@ -17,6 +21,7 @@ class ResumePersonaAssessor:
         rejected_claims: list[dict[str, Any]],
         draft: str,
         minimum_coverage: float,
+        allow_contact_pii: bool = False,
     ) -> ResumeAssessment:
         requirement_count = len(evidence_map)
         supported_count = sum(
@@ -28,7 +33,10 @@ class ResumePersonaAssessor:
         unsupported_claim_count = sum(
             1 for item in rejected_claims if not item.get("removed_from_draft")
         )
-        privacy_findings = self._privacy_findings(draft)
+        privacy_findings = self.privacy.draft_privacy_findings(
+            draft,
+            allow_contact_pii=allow_contact_pii,
+        )
         findings: list[str] = []
         if coverage < minimum_coverage:
             findings.append(
@@ -48,12 +56,3 @@ class ResumePersonaAssessor:
             privacy_findings=privacy_findings,
             findings=findings,
         )
-
-    @staticmethod
-    def _privacy_findings(text: str) -> list[str]:
-        lowered = text.lower()
-        findings = []
-        for marker in ("@", "ssn", "social security", "api_key", "bearer "):
-            if marker in lowered:
-                findings.append(f"prohibited marker: {marker}")
-        return findings

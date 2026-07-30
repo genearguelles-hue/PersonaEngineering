@@ -1,0 +1,43 @@
+{
+  "schema_version": "pe.resume-candidate-profile.v1",
+  "candidate": {
+    "display_name": "Replace with candidate name",
+    "contact": {
+      "email": "replace@example.com",
+      "phone": "312-555-0100",
+      "location": "Chicago, Illinois",
+      "linkedin": "https://www.linkedin.com/in/replace"
+    }
+  },
+  "summary": "Replace with the candidate's evidence-bounded professional summary.",
+  "skills": [
+    "AI workflow automation",
+    "Python",
+    "data privacy",
+    "test automation",
+    "efficiency measurement"
+  ],
+  "experience": [
+    {
+      "employer": "Replace Employer",
+      "role_title": "Replace Role",
+      "dates": "2024-present",
+      "bullets": [
+        {
+          "evidence_id": "candidate-fact-001",
+          "text": "Built governed AI workflow automation with audit evidence and privacy controls."
+        },
+        {
+          "evidence_id": "candidate-fact-002",
+          "text": "Measured time saved and operational efficiency from deployed automation."
+        }
+      ]
+    }
+  ],
+  "education": [
+    {
+      "credential": "Replace Credential",
+      "institution": "Replace Institution"
+    }
+  ]
+}

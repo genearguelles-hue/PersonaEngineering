@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from enum import StrEnum
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -15,6 +15,7 @@ class ResumeWorkflowState(StrEnum):
     RECEIVED = "received"
     AUTHORIZED = "authorized"
     DRAFTING = "drafting"
+    AWAITING_USER_REVISION = "awaiting_user_revision"
     AWAITING_USER_APPROVAL = "awaiting_user_approval"
     COMPLETED = "completed"
     FAILED = "failed"
@@ -40,6 +41,14 @@ class ResumeDecisionRequest(BaseModel):
         if self.decision == ResumeDecision.APPROVE and self.corrections:
             raise ValueError("approve cannot include corrections")
         return self
+
+
+class ResumePurgeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    reviewer_id: str = Field(min_length=2, max_length=128)
+    reason: str = Field(min_length=3, max_length=1000)
+    confirmation: Literal["PURGE_SENSITIVE_ARTIFACTS"]
 
 
 class ResumeAssessment(BaseModel):

@@ -1,0 +1,100 @@
+{
+  "schema_version": "pe.mission-control.launch.v1",
+  "mission_id": "pe-resume-phase3-real-shadow-001",
+  "name": "Resume Tailoring Phase 3 controlled real-data shadow mission",
+  "mission_type": "resume_tailoring",
+  "governance_mode": "governed",
+  "persona_binding": {
+    "persona_id": "pe.resume_tailoring_specialist",
+    "version": "0.1.0"
+  },
+  "tool": {
+    "adapter_id": "resume-tailor",
+    "action": "shadow",
+    "parameters": {
+      "fixture": false,
+      "resume_mission": {
+        "schema_version": "pe.resume_tailoring.mission.v2",
+        "mission_type": "resume_tailoring",
+        "mode": "governed",
+        "persona_binding": {
+          "persona_id": "pe.resume_tailoring_specialist",
+          "minimum_version": "0.1.0"
+        },
+        "candidate_source_refs": [
+          {
+            "source_id": "candidate-canonical-profile",
+            "source_type": "canonical_profile",
+            "uri": "intake:///candidate_profile.json",
+            "content_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "authorization": "user_authorized"
+          }
+        ],
+        "target_job": {
+          "description_ref": {
+            "source_id": "target-job-description",
+            "source_type": "job_description",
+            "uri": "intake:///job_description.json",
+            "content_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+            "authorization": "user_authorized"
+          },
+          "employer": "Replace Target Employer",
+          "role_title": "AI Automation Engineer"
+        },
+        "strategy": {
+          "positioning": "Evidence-bounded AI automation and governance",
+          "must_include": [
+            "AI workflow automation"
+          ],
+          "must_exclude": [],
+          "tone": "hybrid"
+        },
+        "output": {
+          "format": "markdown",
+          "page_target": 2,
+          "application_ready_requires_user_approval": true
+        },
+        "privacy": {
+          "ledger_payload_mode": "hash_and_reference",
+          "embedding_policy_id": "pe.resume_ideation_ingestion.v1",
+          "allow_employer_names_in_embeddings": false
+        },
+        "governance": {
+          "require_pre_execution_authorization": true,
+          "require_persona_assessment": true,
+          "require_ledger_terminal_event": true,
+          "require_zero_unsupported_claims": true,
+          "minimum_requirement_coverage": 0.75
+        },
+        "real_data_controls": {
+          "processing_mode": "shadow",
+          "purpose": "resume_tailoring",
+          "user_consent": true,
+          "consent_record_id": "replace-with-consent-record-id",
+          "local_processing_only": true,
+          "external_model_calls": false,
+          "external_submission": false,
+          "production_vector_write": false,
+          "retention_hours": 168,
+          "sensitive_artifact_purge_requires_confirmation": true
+        }
+      }
+    }
+  },
+  "objectives": [
+    "Tailor a real canonical profile to a real job description without fabricating claims",
+    "Keep raw candidate content out of Ledger event payloads",
+    "Require independent assessment and explicit user approval",
+    "Prepare only privacy-sanitized non-production Ideation derivatives"
+  ],
+  "constraints": {
+    "synthetic_only": false,
+    "real_data_mode": "shadow",
+    "no_external_submission": true,
+    "requires_user_final_approval": true
+  },
+  "telemetry": {
+    "capture_token_usage": true,
+    "capture_revision_count": true
+  }
+}

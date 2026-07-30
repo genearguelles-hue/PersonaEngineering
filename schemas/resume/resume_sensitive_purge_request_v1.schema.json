@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://persona.engineering/schemas/resume/resume_sensitive_purge_request_v1.schema.json",
+  "title": "Resume Sensitive Artifact Purge Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "reviewer_id",
+    "reason",
+    "confirmation"
+  ],
+  "properties": {
+    "reviewer_id": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 128
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 1000
+    },
+    "confirmation": {
+      "const": "PURGE_SENSITIVE_ARTIFACTS"
+    }
+  }
+}

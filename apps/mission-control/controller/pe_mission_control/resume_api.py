@@ -4,7 +4,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
-from .resume_models import ResumeDecisionRequest
+from .resume_models import ResumeDecisionRequest, ResumePurgeRequest
 from .resume_workflow import (
     ResumeWorkflowConflictError,
     ResumeWorkflowNotFoundError,
@@ -54,5 +54,17 @@ def build_resume_router(service: ResumeWorkflowService) -> APIRouter:
             return service.evidence(mission_id)
         except ResumeWorkflowNotFoundError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @router.post("/{mission_id}/purge-sensitive")
+    async def purge_resume_sensitive_artifacts(
+        mission_id: str,
+        request: ResumePurgeRequest,
+    ):
+        try:
+            return service.purge_sensitive(mission_id, request)
+        except ResumeWorkflowNotFoundError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ResumeWorkflowConflictError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
 
     return router

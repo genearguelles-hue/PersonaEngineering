@@ -1,0 +1,279 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://persona.engineering/schemas/resume/resume_tailoring_mission_v2.schema.json",
+  "title": "Resume Tailoring Real-Data Shadow Mission",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "mission_type",
+    "mode",
+    "persona_binding",
+    "candidate_source_refs",
+    "target_job",
+    "strategy",
+    "output",
+    "privacy",
+    "governance",
+    "real_data_controls"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "pe.resume_tailoring.mission.v2"
+    },
+    "mission_type": {
+      "const": "resume_tailoring"
+    },
+    "mode": {
+      "const": "governed"
+    },
+    "persona_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "persona_id",
+        "minimum_version"
+      ],
+      "properties": {
+        "persona_id": {
+          "const": "pe.resume_tailoring_specialist"
+        },
+        "minimum_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        }
+      }
+    },
+    "candidate_source_refs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "$ref": "#/$defs/sourceRef"
+      }
+    },
+    "target_job": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "description_ref",
+        "role_title"
+      ],
+      "properties": {
+        "description_ref": {
+          "$ref": "#/$defs/sourceRef"
+        },
+        "employer": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "role_title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      }
+    },
+    "strategy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "positioning",
+        "must_include",
+        "must_exclude",
+        "tone"
+      ],
+      "properties": {
+        "positioning": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "must_include": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "must_exclude": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "tone": {
+          "enum": [
+            "executive",
+            "technical",
+            "hybrid",
+            "concise"
+          ]
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "page_target",
+        "application_ready_requires_user_approval"
+      ],
+      "properties": {
+        "format": {
+          "const": "markdown"
+        },
+        "page_target": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "application_ready_requires_user_approval": {
+          "const": true
+        }
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ledger_payload_mode",
+        "embedding_policy_id",
+        "allow_employer_names_in_embeddings"
+      ],
+      "properties": {
+        "ledger_payload_mode": {
+          "const": "hash_and_reference"
+        },
+        "embedding_policy_id": {
+          "const": "pe.resume_ideation_ingestion.v1"
+        },
+        "allow_employer_names_in_embeddings": {
+          "const": false
+        }
+      }
+    },
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "require_pre_execution_authorization",
+        "require_persona_assessment",
+        "require_ledger_terminal_event",
+        "require_zero_unsupported_claims"
+      ],
+      "properties": {
+        "require_pre_execution_authorization": {
+          "const": true
+        },
+        "require_persona_assessment": {
+          "const": true
+        },
+        "require_ledger_terminal_event": {
+          "const": true
+        },
+        "require_zero_unsupported_claims": {
+          "const": true
+        },
+        "minimum_requirement_coverage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.75
+        }
+      }
+    },
+    "real_data_controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "processing_mode",
+        "purpose",
+        "user_consent",
+        "consent_record_id",
+        "local_processing_only",
+        "external_model_calls",
+        "external_submission",
+        "production_vector_write",
+        "retention_hours",
+        "sensitive_artifact_purge_requires_confirmation"
+      ],
+      "properties": {
+        "processing_mode": {
+          "const": "shadow"
+        },
+        "purpose": {
+          "const": "resume_tailoring"
+        },
+        "user_consent": {
+          "const": true
+        },
+        "consent_record_id": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 200
+        },
+        "local_processing_only": {
+          "const": true
+        },
+        "external_model_calls": {
+          "const": false
+        },
+        "external_submission": {
+          "const": false
+        },
+        "production_vector_write": {
+          "const": false
+        },
+        "retention_hours": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 720
+        },
+        "sensitive_artifact_purge_requires_confirmation": {
+          "const": true
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "source_type",
+        "uri",
+        "content_hash",
+        "authorization"
+      ],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "source_type": {
+          "enum": [
+            "canonical_profile",
+            "job_description"
+          ]
+        },
+        "uri": {
+          "type": "string",
+          "pattern": "^intake:///"
+        },
+        "content_hash": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        },
+        "authorization": {
+          "const": "user_authorized"
+        }
+      }
+    }
+  }
+}

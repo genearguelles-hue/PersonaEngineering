@@ -1,0 +1,23 @@
+{
+  "schema_version": "pe.resume-job-description.v1",
+  "employer": "Replace Target Employer",
+  "role_title": "AI Automation Engineer",
+  "description": "Replace with the authorized job-description text for the target role.",
+  "requirements": [
+    {
+      "id": "req-001",
+      "text": "Build AI workflow automation using Python",
+      "required": true
+    },
+    {
+      "id": "req-002",
+      "text": "Apply data privacy and confidentiality controls",
+      "required": true
+    },
+    {
+      "id": "req-003",
+      "text": "Measure time saved and operational efficiency",
+      "required": true
+    }
+  ]
+}
