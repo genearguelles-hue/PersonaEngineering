@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://persona.engineering/schemas/resume/resume_assessment_v2.schema.json",
+  "title": "Resume Assessment v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "assessor_id",
+    "verdict",
+    "requirement_coverage",
+    "strong_count",
+    "partial_count",
+    "adjacent_count",
+    "absent_count",
+    "required_absent_count",
+    "requirement_results",
+    "unsupported_claim_count",
+    "privacy_findings",
+    "findings",
+    "assessed_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "pe.resume-assessment.v2"
+    },
+    "assessor_id": {
+      "const": "resume-persona-assessor@0.2.0"
+    },
+    "verdict": {
+      "enum": [
+        "pass",
+        "revise"
+      ]
+    },
+    "requirement_coverage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "strong_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "partial_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "adjacent_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "absent_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "required_absent_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "requirement_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "requirement_id",
+          "required",
+          "classification",
+          "coverage_weight",
+          "rationale_code",
+          "matched_capabilities",
+          "missing_capabilities",
+          "supporting_evidence_ids"
+        ],
+        "properties": {
+          "requirement_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "classification": {
+            "enum": [
+              "strong",
+              "partial",
+              "adjacent",
+              "absent"
+            ]
+          },
+          "coverage_weight": {
+            "enum": [
+              0,
+              0.5,
+              1
+            ]
+          },
+          "rationale_code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "matched_capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "missing_capabilities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "supporting_evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "unsupported_claim_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "privacy_findings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "assessed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

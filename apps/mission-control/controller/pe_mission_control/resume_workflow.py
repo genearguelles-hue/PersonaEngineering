@@ -19,6 +19,7 @@ from .resume_attestation import (
     ResumePersonaBindingError,
     ResumePersonaRegistry,
 )
+from .resume_evidence_rubric import ResumeEvidenceRubric
 from .resume_models import (
     ResumeDecision,
     ResumeDecisionRequest,
@@ -100,6 +101,7 @@ class ResumeWorkflowService:
         self.resolver = ResumeSourceResolver(adapter.settings, self.privacy)
         self.persona_registry = ResumePersonaRegistry(adapter.settings)
         self.assessor = ResumePersonaAssessor(self.privacy)
+        self.evidence_rubric = ResumeEvidenceRubric()
         self._records: dict[str, ResumeWorkflowRecord] = {}
 
     async def create(self, payload: dict[str, Any]) -> ResumeWorkflowRecord:
@@ -555,15 +557,21 @@ class ResumeWorkflowService:
                 "sensitive_artifact": True,
             },
         )
-        supported_count = sum(
-            1 for item in evidence_map if item["supporting_evidence_ids"]
-        )
+        classification_counts = {
+            level: sum(
+                1
+                for item in evidence_map
+                if item["classification"] == level
+            )
+            for level in ("strong", "partial", "adjacent", "absent")
+        }
         self._append(
             record,
             "resume_evidence_mapped",
             {
                 "mapping_count": len(evidence_map),
-                "supported_mapping_count": supported_count,
+                "rubric_version": self.evidence_rubric.version,
+                "classification_counts": classification_counts,
                 "artifact": "evidence-map.json",
                 "artifact_hash": self._file_hash(mission_dir / "evidence-map.json"),
             },
@@ -586,6 +594,7 @@ class ResumeWorkflowService:
         draft = self._build_real_draft(
             resolved,
             evidence_catalog,
+            evidence_map=evidence_map,
             emphasis=emphasis,
         )
         chunks = self._prepare_real_sanitized_chunks(
@@ -666,6 +675,11 @@ class ResumeWorkflowService:
                 "assessor_id": assessment.assessor_id,
                 "verdict": assessment.verdict,
                 "requirement_coverage": assessment.requirement_coverage,
+                "strong_count": assessment.strong_count,
+                "partial_count": assessment.partial_count,
+                "adjacent_count": assessment.adjacent_count,
+                "absent_count": assessment.absent_count,
+                "required_absent_count": assessment.required_absent_count,
                 "unsupported_claim_count": assessment.unsupported_claim_count,
                 "privacy_finding_count": len(assessment.privacy_findings),
                 "artifact": assessment_path.name,
@@ -1215,30 +1229,28 @@ class ResumeWorkflowService:
         *,
         emphasis: list[str],
     ) -> list[dict[str, Any]]:
-        emphasis_tokens = self._tokens(" ".join(emphasis))
         mappings: list[dict[str, Any]] = []
         for requirement in requirements:
-            requirement_tokens = self._tokens(requirement["text"])
-            ranked = []
-            for item in catalog:
-                evidence_tokens = self._tokens(item["text"])
-                overlap = len(requirement_tokens & evidence_tokens)
-                emphasis_overlap = len(emphasis_tokens & evidence_tokens)
-                score = overlap * 2 + emphasis_overlap
-                if score:
-                    ranked.append((score, item))
-            ranked.sort(
-                key=lambda pair: (
-                    -pair[0],
-                    pair[1]["evidence_id"],
-                )
+            result = self.evidence_rubric.classify(
+                requirement,
+                catalog,
+                emphasis=emphasis,
             )
-            selected = [item for _, item in ranked[:3]]
+            selected = list(result.evidence)
             mappings.append(
                 {
                     "requirement_id": requirement["id"],
                     "requirement_text": requirement["text"],
                     "required": requirement["required"],
+                    "classification": result.classification,
+                    "coverage_weight": result.weight,
+                    "rationale_code": result.rationale_code,
+                    "matched_capabilities": list(
+                        result.matched_capabilities
+                    ),
+                    "missing_capabilities": list(
+                        result.missing_capabilities
+                    ),
                     "supporting_evidence_ids": [
                         item["evidence_id"] for item in selected
                     ],
@@ -1252,6 +1264,7 @@ class ResumeWorkflowService:
         resolved: ResolvedResumeSources,
         catalog: list[dict[str, Any]],
         *,
+        evidence_map: list[dict[str, Any]],
         emphasis: list[str],
     ) -> str:
         profile = resolved.candidate.document
@@ -1302,6 +1315,12 @@ class ResumeWorkflowService:
                 "\n## Core Skills\n\n" + " • ".join(ranked_skills[:16])
             )
         sections.append("\n## Professional Experience")
+        preferred_evidence_ids = {
+            evidence_id
+            for mapping in evidence_map
+            if mapping["classification"] in {"strong", "partial"}
+            for evidence_id in mapping["supporting_evidence_ids"]
+        }
         evidence_by_context: dict[tuple[str, str], list[dict[str, Any]]] = {}
         for item in catalog:
             if item["type"] != "experience_bullet":
@@ -1322,6 +1341,9 @@ class ResumeWorkflowService:
             ranked = sorted(
                 items,
                 key=lambda item: (
+                    0
+                    if item["evidence_id"] in preferred_evidence_ids
+                    else 1,
                     -len(self._tokens(item["text"]) & job_tokens),
                     item["evidence_id"],
                 ),

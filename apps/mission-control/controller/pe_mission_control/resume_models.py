@@ -52,10 +52,16 @@ class ResumePurgeRequest(BaseModel):
 
 
 class ResumeAssessment(BaseModel):
-    schema_version: str = "pe.resume-assessment.v1"
-    assessor_id: str = "resume-persona-assessor@0.1.0"
+    schema_version: str = "pe.resume-assessment.v2"
+    assessor_id: str = "resume-persona-assessor@0.2.0"
     verdict: str
     requirement_coverage: float = Field(ge=0.0, le=1.0)
+    strong_count: int = Field(default=0, ge=0)
+    partial_count: int = Field(default=0, ge=0)
+    adjacent_count: int = Field(default=0, ge=0)
+    absent_count: int = Field(default=0, ge=0)
+    required_absent_count: int = Field(default=0, ge=0)
+    requirement_results: list[dict[str, Any]] = Field(default_factory=list)
     unsupported_claim_count: int = Field(ge=0)
     privacy_findings: list[str] = Field(default_factory=list)
     findings: list[str] = Field(default_factory=list)

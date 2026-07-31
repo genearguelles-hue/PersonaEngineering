@@ -9,7 +9,13 @@ from .resume_privacy import ResumePrivacyTransformer
 class ResumePersonaAssessor:
     """Independent deterministic gate for synthetic and real shadow workflows."""
 
-    assessor_id = "resume-persona-assessor@0.1.0"
+    assessor_id = "resume-persona-assessor@0.2.0"
+    LEVEL_WEIGHTS = {
+        "strong": 1.0,
+        "partial": 0.5,
+        "adjacent": 0.0,
+        "absent": 0.0,
+    }
 
     def __init__(self, privacy: ResumePrivacyTransformer | None = None):
         self.privacy = privacy or ResumePrivacyTransformer()
@@ -23,13 +29,66 @@ class ResumePersonaAssessor:
         minimum_coverage: float,
         allow_contact_pii: bool = False,
     ) -> ResumeAssessment:
-        requirement_count = len(evidence_map)
-        supported_count = sum(
-            1 for item in evidence_map if item.get("supporting_evidence_ids")
+        requirement_results = []
+        for item in evidence_map:
+            classification = item.get("classification")
+            if classification not in self.LEVEL_WEIGHTS:
+                classification = (
+                    "strong" if item.get("supporting_evidence_ids") else "absent"
+                )
+            requirement_results.append(
+                {
+                    "requirement_id": item.get("requirement_id"),
+                    "required": item.get("required", True),
+                    "classification": classification,
+                    "coverage_weight": self.LEVEL_WEIGHTS[classification],
+                    "rationale_code": item.get(
+                        "rationale_code",
+                        f"legacy:{classification}",
+                    ),
+                    "matched_capabilities": item.get(
+                        "matched_capabilities",
+                        [],
+                    ),
+                    "missing_capabilities": item.get(
+                        "missing_capabilities",
+                        [],
+                    ),
+                    "supporting_evidence_ids": item.get(
+                        "supporting_evidence_ids",
+                        [],
+                    ),
+                }
+            )
+        required_results = [
+            item for item in requirement_results if item["required"]
+        ]
+        weighted_support = sum(
+            item["coverage_weight"] for item in required_results
         )
         coverage = (
-            supported_count / requirement_count if requirement_count else 0.0
+            weighted_support / len(required_results)
+            if required_results
+            else 0.0
         )
+        counts = {
+            level: sum(
+                1
+                for item in requirement_results
+                if item["classification"] == level
+            )
+            for level in self.LEVEL_WEIGHTS
+        }
+        required_absent = [
+            item["requirement_id"]
+            for item in required_results
+            if item["classification"] == "absent"
+        ]
+        required_adjacent = [
+            item["requirement_id"]
+            for item in required_results
+            if item["classification"] == "adjacent"
+        ]
         unsupported_claim_count = sum(
             1 for item in rejected_claims if not item.get("removed_from_draft")
         )
@@ -43,6 +102,16 @@ class ResumePersonaAssessor:
                 f"requirement coverage {coverage:.3f} is below "
                 f"{minimum_coverage:.3f}"
             )
+        if required_absent:
+            findings.append(
+                "required capabilities are absent for: "
+                + ", ".join(str(item) for item in required_absent)
+            )
+        if required_adjacent:
+            findings.append(
+                "adjacent evidence receives no coverage credit for: "
+                + ", ".join(str(item) for item in required_adjacent)
+            )
         if unsupported_claim_count:
             findings.append("one or more unsupported claims remain in the draft")
         if privacy_findings:
@@ -52,6 +121,12 @@ class ResumePersonaAssessor:
             assessor_id=self.assessor_id,
             verdict=verdict,
             requirement_coverage=coverage,
+            strong_count=counts["strong"],
+            partial_count=counts["partial"],
+            adjacent_count=counts["adjacent"],
+            absent_count=counts["absent"],
+            required_absent_count=len(required_absent),
+            requirement_results=requirement_results,
             unsupported_claim_count=unsupported_claim_count,
             privacy_findings=privacy_findings,
             findings=findings,

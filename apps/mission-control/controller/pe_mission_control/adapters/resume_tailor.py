@@ -31,7 +31,7 @@ class ResumeTailoringAdapter(ToolAdapter):
         return AdapterDescriptor(
             adapter_id=self.adapter_id,
             display_name="Governed Resume Tailoring",
-            version="0.2.0",
+            version="0.3.0",
             transport="in_process_cognitive_workflow",
             domain="career-evidence-transformation",
             capabilities=[
@@ -41,6 +41,7 @@ class ResumeTailoringAdapter(ToolAdapter):
                 "exact_persona_spec_resolution",
                 "hash_pinned_source_resolution",
                 "evidence_mapping",
+                "graded_evidence_rubric",
                 "independent_assessment",
                 "human_approval_pause",
                 "privacy_sanitized_ideation_handoff",
@@ -57,6 +58,8 @@ class ResumeTailoringAdapter(ToolAdapter):
             details={
                 "phase": 3,
                 "attestation_enhancement": "3A",
+                "evidence_rubric_enhancement": "3B",
+                "evidence_rubric_version": "pe.resume-evidence-rubric.v1",
                 "persona_execution_attestation": True,
                 "real_candidate_data_allowed": root_ready,
                 "real_data_mode": "local_shadow_only",
