@@ -14,6 +14,11 @@ from .ledger import MissionLedger
 from .models import MissionEnvelope
 from .registry import AdapterRegistry
 from .resume_assessor import ResumePersonaAssessor
+from .resume_attestation import (
+    ResolvedResumePersona,
+    ResumePersonaBindingError,
+    ResumePersonaRegistry,
+)
 from .resume_models import (
     ResumeDecision,
     ResumeDecisionRequest,
@@ -43,6 +48,7 @@ class ResumeWorkflowService:
 
     EVENT_TYPES = (
         "resume_mission_received",
+        "persona_binding_resolved",
         "resume_authorization_decided",
         "resume_sources_resolved",
         "resume_requirements_extracted",
@@ -92,6 +98,7 @@ class ResumeWorkflowService:
         self.adapter = adapter
         self.privacy = ResumePrivacyTransformer()
         self.resolver = ResumeSourceResolver(adapter.settings, self.privacy)
+        self.persona_registry = ResumePersonaRegistry(adapter.settings)
         self.assessor = ResumePersonaAssessor(self.privacy)
         self._records: dict[str, ResumeWorkflowRecord] = {}
 
@@ -137,6 +144,23 @@ class ResumeWorkflowService:
                 "payload_hash": self._sha256_json(payload),
             },
         )
+        try:
+            self._resolve_persona_binding(record)
+        except ResumePersonaBindingError as exc:
+            record.authorization_decision = "blocked"
+            record.state = ResumeWorkflowState.FAILED
+            record.error = str(exc)
+            self._append(
+                record,
+                "resume_authorization_decided",
+                {
+                    "decision": "blocked",
+                    "policy_bindings": ["PE-RESUME-PERSONA-BINDING"],
+                    "rationale": str(exc),
+                },
+            )
+            self._terminalize(record)
+            return record
         decision = await self.adapter.authorize(envelope)
         record.authorization_decision = decision.decision.lower()
         authorization_details = {
@@ -299,8 +323,41 @@ class ResumeWorkflowService:
             raise ResumeWorkflowConflictError(
                 "ledger verification failed after sensitive-artifact purge"
             )
+        verification = self.ledger.verify(mission_id)
+        self._write_execution_attestation(record, verification)
+        self._persist(record)
         self.ledger.seal_manifest(mission_id)
         return receipt
+
+    def _resolve_persona_binding(
+        self,
+        record: ResumeWorkflowRecord,
+    ) -> ResolvedResumePersona:
+        resolved = self.persona_registry.resolve(
+            record.persona_id,
+            record.persona_version,
+        )
+        mission_dir = self.ledger.mission_dir(record.mission_id)
+        binding_path = mission_dir / "persona-binding.json"
+        self._write_json(binding_path, resolved.artifact())
+        binding_event = self._append(
+            record,
+            "persona_binding_resolved",
+            resolved.ledger_details(self._file_hash(binding_path)),
+        )
+        record.metadata["persona_binding"] = {
+            "persona_spec_sha256": resolved.persona_spec_sha256,
+            "runtime_contract_sha256": resolved.runtime_contract_sha256,
+            "persona_model": resolved.persona_model,
+            "engram_ids": list(resolved.engram_ids),
+            "primitive_ids": list(resolved.primitive_ids),
+            "axiom_ids": list(resolved.axiom_ids),
+            "binding_event_sequence": binding_event["sequence"],
+            "binding_event_hash": binding_event["event_hash"],
+            "registry_index_verified": resolved.registry_index_verified,
+        }
+        self._persist(record)
+        return resolved
 
     def _run_fixture_draft(
         self,
@@ -702,6 +759,7 @@ class ResumeWorkflowService:
         final_path = mission_dir / "resume-final.md"
         final_path.write_bytes(draft_path.read_bytes())
         record.final_artifact = final_path.name
+        record.metadata["final_artifact_sha256"] = self._file_hash(final_path)
         self._append(
             record,
             "resume_artifact_finalized",
@@ -833,7 +891,7 @@ class ResumeWorkflowService:
 
     def _terminalize(self, record: ResumeWorkflowRecord) -> None:
         preterminal = self.ledger.verify(record.mission_id)
-        self._append(
+        terminal_event = self._append(
             record,
             "resume_mission_terminal",
             {
@@ -844,6 +902,7 @@ class ResumeWorkflowService:
                 "processing_mode": record.metadata.get("processing_mode"),
             },
         )
+        record.metadata["mission_terminal_event_hash"] = terminal_event["event_hash"]
         record.updated_at = utc_now()
         self._persist(record)
         final_verification = self.ledger.verify(record.mission_id)
@@ -851,7 +910,76 @@ class ResumeWorkflowService:
             raise ResumeWorkflowConflictError(
                 "ledger verification failed before evidence sealing"
             )
+        if "persona_binding" in record.metadata:
+            self._write_execution_attestation(record, final_verification)
+            self._persist(record)
         self.ledger.seal_manifest(record.mission_id)
+
+    def _write_execution_attestation(
+        self,
+        record: ResumeWorkflowRecord,
+        ledger_verification: dict[str, Any],
+    ) -> None:
+        binding = record.metadata.get("persona_binding")
+        if not isinstance(binding, dict):
+            raise ResumeWorkflowConflictError(
+                "persona execution cannot be attested without a resolved binding"
+            )
+        terminal_event_hash = record.metadata.get("mission_terminal_event_hash")
+        if not isinstance(terminal_event_hash, str):
+            raise ResumeWorkflowConflictError(
+                "persona execution cannot be attested without a terminal event"
+            )
+        attestation = {
+            "schema_version": "pe.resume-persona-execution-attestation.v1",
+            "mission_id": record.mission_id,
+            "persona_id": record.persona_id,
+            "persona_version": record.persona_version,
+            "persona_spec_sha256": binding["persona_spec_sha256"],
+            "persona_model": binding["persona_model"],
+            "runtime_contract_sha256": binding["runtime_contract_sha256"],
+            "active_components": {
+                "engram_ids": binding["engram_ids"],
+                "primitive_ids": binding["primitive_ids"],
+                "axiom_ids": binding["axiom_ids"],
+            },
+            "binding_event": {
+                "sequence": binding["binding_event_sequence"],
+                "event_hash": binding["binding_event_hash"],
+            },
+            "authorization": (
+                record.authorization_decision.upper()
+                if record.authorization_decision
+                else "UNKNOWN"
+            ),
+            "assessor": {
+                "assessor_id": "resume-persona-assessor@0.1.0",
+                "verdict": record.assessor_verdict,
+            },
+            "user_approval_recorded": bool(
+                record.metadata.get("final_artifact_sha256")
+            ),
+            "ledger": {
+                "valid": ledger_verification["valid"],
+                "event_count": ledger_verification["event_count"],
+                "terminal_hash": ledger_verification["terminal_hash"],
+                "mission_terminal_event_hash": terminal_event_hash,
+            },
+            "resume_artifact_sha256": record.metadata.get(
+                "final_artifact_sha256"
+            ),
+            "attested_at": utc_now().isoformat(),
+        }
+        attestation_path = (
+            self.ledger.mission_dir(record.mission_id)
+            / "persona-execution-attestation.json"
+        )
+        self._write_json(attestation_path, attestation)
+        record.metadata["persona_execution_attestation"] = {
+            "artifact": attestation_path.name,
+            "sha256": self._file_hash(attestation_path),
+            "ledger_terminal_hash": ledger_verification["terminal_hash"],
+        }
 
     def _fail(self, record: ResumeWorkflowRecord, message: str) -> None:
         record.state = ResumeWorkflowState.FAILED
@@ -1266,13 +1394,13 @@ class ResumeWorkflowService:
         record: ResumeWorkflowRecord,
         event_type: str,
         details: dict[str, Any],
-    ) -> None:
+    ) -> dict[str, Any]:
         allowed = set(self.EVENT_TYPES) | set(self.OPTIONAL_EVENT_TYPES)
         if event_type not in allowed:
             raise ResumeWorkflowConflictError(
                 f"unregistered résumé ledger event: {event_type}"
             )
-        self.ledger.append(
+        event = self.ledger.append(
             record.mission_id,
             event_type,
             record.state,
@@ -1280,6 +1408,7 @@ class ResumeWorkflowService:
         )
         record.updated_at = utc_now()
         self._persist(record)
+        return event
 
     def _record_path(self, mission_id: str) -> Path:
         return self.ledger.missions_dir / mission_id / "resume-workflow-record.json"

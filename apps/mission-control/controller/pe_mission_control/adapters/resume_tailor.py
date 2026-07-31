@@ -37,6 +37,8 @@ class ResumeTailoringAdapter(ToolAdapter):
             capabilities=[
                 "synthetic_fixture",
                 "real_data_local_shadow",
+                "persona_execution_attestation",
+                "exact_persona_spec_resolution",
                 "hash_pinned_source_resolution",
                 "evidence_mapping",
                 "independent_assessment",
@@ -54,6 +56,8 @@ class ResumeTailoringAdapter(ToolAdapter):
             execution_mode="synthetic_and_real_shadow",
             details={
                 "phase": 3,
+                "attestation_enhancement": "3A",
+                "persona_execution_attestation": True,
                 "real_candidate_data_allowed": root_ready,
                 "real_data_mode": "local_shadow_only",
                 "intake_root_configured": root_ready,

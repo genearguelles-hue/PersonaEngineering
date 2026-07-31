@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/genearguelles-hue/PersonaEngineering/schemas/resume/resume_persona_execution_attestation_v1.schema.json",
+  "title": "Resume Persona Execution Attestation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "mission_id",
+    "persona_id",
+    "persona_version",
+    "persona_spec_sha256",
+    "persona_model",
+    "runtime_contract_sha256",
+    "active_components",
+    "binding_event",
+    "authorization",
+    "assessor",
+    "user_approval_recorded",
+    "ledger",
+    "resume_artifact_sha256",
+    "attested_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "pe.resume-persona-execution-attestation.v1"
+    },
+    "mission_id": {"type": "string", "minLength": 1},
+    "persona_id": {"const": "pe.resume_tailoring_specialist"},
+    "persona_version": {"type": "string", "minLength": 1},
+    "persona_spec_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "persona_model": {"const": "Pi = <E, P, A>"},
+    "runtime_contract_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "active_components": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["engram_ids", "primitive_ids", "axiom_ids"],
+      "properties": {
+        "engram_ids": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "primitive_ids": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "axiom_ids": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "binding_event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sequence", "event_hash"],
+      "properties": {
+        "sequence": {"type": "integer", "minimum": 1},
+        "event_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "authorization": {
+      "enum": ["AUTHORIZED", "BLOCKED", "UNKNOWN"]
+    },
+    "assessor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assessor_id", "verdict"],
+      "properties": {
+        "assessor_id": {"type": "string"},
+        "verdict": {"type": ["string", "null"]}
+      }
+    },
+    "user_approval_recorded": {"type": "boolean"},
+    "ledger": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "valid",
+        "event_count",
+        "terminal_hash",
+        "mission_terminal_event_hash"
+      ],
+      "properties": {
+        "valid": {"const": true},
+        "event_count": {"type": "integer", "minimum": 1},
+        "terminal_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mission_terminal_event_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "resume_artifact_sha256": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "attested_at": {"type": "string", "format": "date-time"}
+  }
+}
